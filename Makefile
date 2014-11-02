@@ -1,5 +1,6 @@
 CC=g++
-CFLAGS=-c -Wall -Wextra -ansi -pedantic -std=c++11 -stdlib=libc++
+CFLAGS=-c -Wall -Wextra -ansi -pedantic 
+#~ -std=c++11 -stdlib=libc++
 #CFLAGS=-c -Wall -Wextra
 LDFLAGS=
 SOURCES=src/ndet.cpp

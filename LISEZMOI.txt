@@ -1,0 +1,45 @@
+Rendu du projet LIF15 2013-2014
+===============================
+
+BRANDON   Romuald   #123456
+THIEL     Sylvain   #456789
+
+Langage C++
+
+Voir http://liris.cnrs.fr/~sbrandel/enseignement/LIF15/projet/
+
+Contenu de l'archive
+--------------------
+
+LISEZMOI.txt      ce fichier
+Makefile          cibles  all, ndet, clean et cleanparser
+exemples/         exemples d'automates : D = Déterministe, ND = Non Déterministe,
+		                         NDE = Non Déterministe avec transitions spontanées
+src/expression_rationnelle.*
+		  définition de la structure de l'arbre syntaxique abstrait des expressions
+		  rationnelles
+src/parser* src/location.hh src/position.* src/stack.*
+		  tout ce qui concerne la lecture des expressions rationnelles
+		  il n'est pas utile de consulter ni de modifier ces fichiers
+src/ndet.cpp	  implémentation des automates non déterministes avec epsilon-transitions
+
+
+Commentaires
+------------
+
+On a de nombreux avertissements de la forme suivante :
+ * ndet.cpp:125:6: warning: unused parameter ‘at’ [-Wunused-parameter]
+ 
+C'est normal car le corps des fonctions sont encore vides, on a pour l'instant
+qu'un simple retour d'une valeur par défaut. Les avertissements disparaîtront
+naturellement quand la fonction sera complètement définie. Les corps à compléter
+sont remarquable par le // TODO qu'ils contiennent.
+
+Le présent exemple est donné en C++. Les étudiants préférant le C99 devront porter
+les modifications afférentes au Makefile et au code quant
+ - aux structures de données dans les typedefs (int * au lieu de vector<int>);
+ - aux chaînes de caractères (char * au lieu de string);
+ - aux entrées/sorties (printf() au lieu de <<, etc.).
+
+Cet exemple d'archive est fournie aux étudiants de l'UE LIF15 2013-2014 A TITRE 
+D'EXEMPLE afin d'illustrer ce qui est demandé et de faciliter l'exécution du travail.
