@@ -26,7 +26,7 @@ typedef size_t                            etat_t;
 typedef unsigned char                     symb_t;
 typedef set< etat_t >                     etatset_t;
 typedef vector< vector< etatset_t > >     trans_t;
-typedef vector< etatset_t >               epsilon_t;
+typedef vector< etatset_t >               epsilon_t; // --- D'un état a un ou plusieurs états
 typedef map< etatset_t, etat_t >          map_t;
 
 
@@ -190,6 +190,9 @@ bool FromFileTxt(sAutoNDE& at, string path){
 // Fonctions à compléter pour la première partie du projet
 // -----------------------------------------------------------------------------
 
+/* !!! Attention, les balises JFF doivent être dans le bon ordre 
+ * pour que cette fonction parse le fichier comme il faut */
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool FromFileJff(sAutoNDE& at, string path){
@@ -200,12 +203,76 @@ bool FromFileJff(sAutoNDE& at, string path){
 	TiXmlHandle hDoc(&doc);
 	TiXmlElement* elem;
 	elem = hDoc.FirstChildElement().Element();
-	elem = elem->FirstChildElement();
-	/*elem = elem->NextSiblingElement();
-	elem = elem->NextSiblingElement();*/
-	printf("Element : %s -> %s\n", elem->Value(), elem->GetText());
+	if(strcmp(elem->Value(), "structure") == 0){
+		elem = elem->FirstChildElement();
+		if(!elem) return false;
+		if(strcmp(elem->Value(), "type") == 0){ // Type (inutile pour le moment)
+				// On ne sait pas quoi faire
+		}
+		elem = elem->NextSiblingElement();
+		// Récupère les états
+		while(elem && strcmp(elem->Value(), "state") == 0){
+			at.nb_etats++;
+			int id = atoi(elem->Attribute("id"));
+			for(TiXmlElement* tmpEl = elem->FirstChildElement(); tmpEl; tmpEl = tmpEl->NextSiblingElement()){
+				if(strcmp(tmpEl->Value(), "final") == 0){
+					at.nb_finaux++;
+					at.finaux.insert(id);
+					break;
+				}
+				else if(strcmp(tmpEl->Value(), "initial") == 0){
+					at.initial = id;
+					break;
+				}
+			}
+			elem = elem->NextSiblingElement();
+		}
+		// Initialisation des taille des matrices
+		at.epsilon.resize(at.nb_etats);
+		at.trans.resize(at.nb_etats);
+		for(unsigned int i=0; i < at.nb_etats; i++){
+			at.trans[i].resize(at.nb_etats);
+		}
+		
+		set<int> listSymbs; // Liste des symboles trouvés
+		// Récupère le transitions
+		while(elem && strcmp(elem->Value(), "transition") == 0){
+			int from, to, read;
+			bool epsilonTrans = false; // True si on trouve une epsilon transition
+			// On admet que les balise from, to, et read sont présentes
+			for(TiXmlElement* tmpEl = elem->FirstChildElement(); tmpEl; tmpEl = tmpEl->NextSiblingElement()){
+				if(strcmp(tmpEl->Value(), "from") == 0){
+					from = atoi(tmpEl->GetText());
+				}
+				else if(strcmp(tmpEl->Value(), "to") == 0){
+					to = atoi(tmpEl->GetText());
+				}
+				else if(strcmp(tmpEl->Value(), "read") == 0){
+					if(tmpEl->GetText() == NULL){
+						epsilonTrans = true; // Aucun carctère à lire car epsilon transition
+					}
+					else{
+						read = tmpEl->GetText()[0]; // Le premier caract : c'est le seul
+						listSymbs.insert(read); // Si on insert 2 fois le même carct, la taille ne change pas
+					}
+				}
+			}
+			
+			if(epsilonTrans){
+				at.epsilon[0].insert(1);
+			}
+			else{
+				at.trans[from][read-ASCII_A].insert(to);
+			}
+			elem = elem->NextSiblingElement();
+		}
+		at.nb_symbs = listSymbs.size();
+	}
+	else{
+		return false;
+	}
 
-	return false;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -414,11 +481,13 @@ void Help(ostream& out, char *s){
 int main(int argc, char* argv[] ){
 	sAutoNDE graphe_a, graphe_b, graphe_c;
 	FromFileTxt(graphe_a, "exemples/automate_D_ex1.txt");
-	FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
+	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
+	trans_t tr = graphe_a.trans;
 	
-	cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
+	//cout << tr[0][0].begin() << endl;
+	/*cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_a.finaux) << endl;
-	cout << ContientFinal(graphe_b, graphe_b.finaux) << endl;
+	cout << ContientFinal(graphe_b, graphe_b.finaux) << endl;*/
 	
 	if(FromFile(graphe_c, "exemples/00_test.jff")){
 		
