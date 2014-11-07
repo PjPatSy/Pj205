@@ -26,32 +26,32 @@ typedef size_t                            etat_t;
 typedef unsigned char                     symb_t;
 typedef set< etat_t >                     etatset_t;
 typedef vector< vector< etatset_t > >     trans_t;
-typedef vector< etatset_t >               epsilon_t; // --- D'un Ã©tat a un ou plusieurs Ã©tats
+typedef vector< etatset_t >               epsilon_t; // --- D'un état a un ou plusieurs états
 typedef map< etatset_t, etat_t >          map_t;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 struct sAutoNDE{
-	// caractÃ©ristiques
+	// caractéristiques
 	size_t nb_etats;
 	size_t nb_symbs;
 	size_t nb_finaux;
 
 	etat_t initial;
-	// Ã©tat initial
+	// état initial
 
 	etatset_t finaux;
-	// Ã©tats finaux : finaux_t peut Ãªtre un int*, un tableau dynamique comme vector<int>
-	// ou une autre structure de donnÃ©e de votre choix.
+	// états finaux : finaux_t peut être un int*, un tableau dynamique comme vector<int>
+	// ou une autre structure de donnée de votre choix.
 
 	trans_t trans;
-	// matrice de transition : trans_t peut Ãªtre un int***, une structure dynamique 3D comme vector< vector< set<int> > >
-	// ou une autre structure de donnÃ©e de votre choix.
+	// matrice de transition : trans_t peut être un int***, une structure dynamique 3D comme vector< vector< set<int> > >
+	// ou une autre structure de donnée de votre choix.
 
 	epsilon_t epsilon;
-	// transitions spontanÃ©es : epsilon_t peut Ãªtre un int**, une structure dynamique 2D comme vector< set<int> >
-	// ou une autre structure de donnÃ©e de votre choix.
+	// transitions spontanées : epsilon_t peut être un int**, une structure dynamique 2D comme vector< set<int> >
+	// ou une autre structure de donnée de votre choix.
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +81,8 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Minimize(const sAutoNDE& at);
 void Help(ostream& out, char *s);
 
-// Permet d'afficher les donnÃ©es de l'automate en console
-void affiche(sAutoNDE autom);
+// Permet d'afficher les données de l'automate en console
+void afficheAutom(sAutoNDE autom);
 
 
 
@@ -96,7 +96,6 @@ bool FromFile(sAutoNDE& at, string path){
 		extension = path.substr(path.find_last_of(".")+1);
 	else
 		extension = "";
-
 	if (extension == "txt")
 		return FromFileTxt(at,path);
 	if (extension == "jff")
@@ -107,20 +106,19 @@ bool FromFile(sAutoNDE& at, string path){
 }
 
 bool FromFileTxt(sAutoNDE& at, string path){
-
 	ifstream myfile(path.c_str(), ios::in);
-	//un flux d'entree obtenu Ã  partir du nom du fichier
+	//un flux d'entree obtenu à partir du nom du fichier
 	string line;
 	// un ligne lue dans le fichier avec getline(myfile,line);
 	istringstream iss;
-	// flux associÃ© Ã  la chaine, pour lire morceau par morceau avec >> (comme cin)
+	// flux associé à la chaine, pour lire morceau par morceau avec >> (comme cin)
 	etat_t s(0), t(0);
-	// deux Ã©tats temporaires
+	// deux états temporaires
 	symb_t a(0);
 	// un symbole temporaire
 
 	if (myfile.is_open()){
-		// la premiÃ¨re ligne donne 'nb_etats nb_symbs nb_finaux'
+		// la première ligne donne 'nb_etats nb_symbs nb_finaux'
 		do{
 			getline(myfile,line);
 		} while (line.empty() || line[0]=='#');
@@ -128,7 +126,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 		iss.str(line);
 		if((iss >> at.nb_etats).fail() || (iss >> at.nb_symbs).fail() || (iss >> at.nb_finaux).fail())
 			return false;
-		// la deuxiÃ¨me ligne donne l'Ã©tat initial
+		// la deuxième ligne donne l'état initial
 		do{
 			getline (myfile,line);
 		} while (line.empty() || line[0]=='#');
@@ -137,7 +135,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 		if((iss >> at.initial).fail())
 			return -1;
 
-		// les autres lignes donnent les Ã©tats finaux
+		// les autres lignes donnent les états finaux
 		for(size_t i = 0; i < at.nb_finaux; i++){
 			do{
 				getline (myfile,line);
@@ -150,7 +148,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 			at.finaux.insert(s);
 		}
 
-		// on alloue les vectors Ã  la taille connue Ã  l'avance pour Ã©viter les resize dynamiques
+		// on alloue les vectors à la taille connue à l'avance pour éviter les resize dynamiques
 		at.epsilon.resize(at.nb_etats);
 		at.trans.resize(at.nb_etats);
 		for(size_t i=0;i<at.nb_etats;++i)
@@ -165,16 +163,18 @@ bool FromFileTxt(sAutoNDE& at, string path){
 			iss.clear();
 			iss.str(line);
 
-			// si une des trois lectures echoue, on passe Ã  la suite
+			// si une des trois lectures echoue, on passe à la suite
 			if((iss >> s).fail() || (iss >> a).fail() || (iss >> t).fail() || (a< ASCII_A ) || (a> ASCII_Z ))
 				continue;
 
+
 			//test espilon ou non
 			if ((a-ASCII_A) >= at.nb_symbs){
+                at.epsilon[s].insert(t);
 				cerr << "s=" << s<< ", (e), t=" << t << endl;
-				//TODO remplir epsilon
 			}
 			else{
+			    at.trans[s][a-ASCII_A].insert(t);
 				cerr << "s=" << s<< ", a=" << a-ASCII_A << ", t=" << t << endl;
 				//TODO remplir trans
 			}
@@ -188,10 +188,10 @@ bool FromFileTxt(sAutoNDE& at, string path){
 
 
 // -----------------------------------------------------------------------------
-// Fonctions Ã  complÃ©ter pour la premiÃ¨re partie du projet
+// Fonctions à compléter pour la première partie du projet
 // -----------------------------------------------------------------------------
 
-/* !!! Attention, les balises JFF doivent Ãªtre dans le bon ordre
+/* !!! Attention, les balises JFF doivent être dans le bon ordre
  * pour que cette fonction parse le fichier comme il faut */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ bool FromFileJff(sAutoNDE& at, string path){
 				// On ne sait pas quoi faire
 		}
 		elem = elem->NextSiblingElement();
-		// RÃ©cupÃ¨re les Ã©tats
+		// Récupère les états
 		at.nb_etats = 0;
 		at.nb_finaux = 0;
 		at.nb_symbs = 0;
@@ -238,12 +238,12 @@ bool FromFileJff(sAutoNDE& at, string path){
 			at.trans[i].resize(at.nb_etats);
 		}
 
-		set<int> listSymbs; // Liste des symboles trouvÃ©s
-		// RÃ©cupÃ¨re le transitions
+		set<int> listSymbs; // Liste des symboles trouvés
+		// Récupère le transitions
 		while(elem && strcmp(elem->Value(), "transition") == 0){
 			int from, to, read;
 			bool epsilonTrans = false; // True si on trouve une epsilon transition
-			// On admet que les balise from, to, et read sont prÃ©sentes
+			// On admet que les balise from, to, et read sont présentes
 
 			for(TiXmlElement* tmpEl = elem->FirstChildElement(); tmpEl; tmpEl = tmpEl->NextSiblingElement()){
 				if(strcmp(tmpEl->Value(), "from") == 0){
@@ -254,11 +254,11 @@ bool FromFileJff(sAutoNDE& at, string path){
 				}
 				else if(strcmp(tmpEl->Value(), "read") == 0){
 					if(tmpEl->GetText() == NULL){
-						epsilonTrans = true; // Aucun carctÃ¨re Ã  lire car epsilon transition
+						epsilonTrans = true; // Aucun carctère à lire car epsilon transition
 					}
 					else{
 						read = tmpEl->GetText()[0]; // Le premier caract : c'est le seul
-						listSymbs.insert(read); // Si on insert 2 fois le mÃªme carct, la taille ne change pas
+						listSymbs.insert(read); // Si on insert 2 fois le même carct, la taille ne change pas
 					}
 				}
 			}
@@ -276,7 +276,6 @@ bool FromFileJff(sAutoNDE& at, string path){
 	else{
 		return false;
 	}
-
 	return true;
 }
 
@@ -297,33 +296,68 @@ bool ContientFinal(const sAutoNDE& at, const etatset_t& e){
 ////////////////////////////////////////////////////////////////////////////////
 
 bool EstDeterministe(const sAutoNDE& at){
-	//TODO dÃ©finir cette fonction
+    // Si on trouve un esplion transition, le graphe est non déterministe
+    for(int i=0; i < at.epsilon.size(); i++){
+        if(!at.epsilon[i].empty()){
+            return false;
+        }
+    }
 
+    for(int i=0; i < at.trans.size(); i++){
+        for(int j=0; j < at.trans[i].size(); j++){
+            // Si on a plus de 2 états pour un état de départ et une transition -> non déterministe
+            // Si on a aucun états pour d'arrivé pour un état de départ et un carctère
+            if(at.trans[i][j].size() != 1){
+                return false;
+            }
+        }
+    }
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void Fermeture(const sAutoNDE& at, etatset_t& e){
-  // Cette fonction clot l'ensemble d'Ã©tats E={e_0, e_1, ... ,e_n} passÃ© en
-  // paramÃ¨tre avec les epsilon transitions
+    // Cette fonction clot l'ensemble d'états E={e_0, e_1, ... ,e_n} passé en
+    // paramètre avec les epsilon transitions
 
-  //TODO dÃ©finir cette fonction
+    etatset_t::iterator itEt, itEps;
+    etatset_t fermeture = e;
+
+    etatset_t tmp1 = e;
+    while(!tmp1.empty()){
+        etatset_t tmp2;
+        for(int i=0; i < at.epsilon.size(); i++){
+            itEt = tmp1.find(i);
+            if(itEt != tmp1.end() && !at.epsilon[i].empty()){
+                for(itEps = at.epsilon[i].begin(); itEps != at.epsilon[i].end(); itEps++){
+                    if(e.insert(*itEps).second){
+                        tmp2.insert(*itEps);
+                    }
+                }
+            }
+        }
+        tmp1 = tmp2;
+    }
+    for(itEt = e.begin(); itEt != e.end(); itEt++){
+        cout << "etat : " << *itEt << endl;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 etatset_t Delta(const sAutoNDE& at, const etatset_t& e, symb_t c){
-  //TODO sur la base de celle pour le cas sans transitions spontanÃ©es,
-  // dÃ©finir cette fonction en utilisant Fermeture
+  //TODO sur la base de celle pour le cas sans transitions spontanées,
+  // définir cette fonction en utilisant Fermeture
 
-  return e;
+
+    return e;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool Accept(const sAutoNDE& at, string str){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return false;
 }
@@ -331,7 +365,7 @@ bool Accept(const sAutoNDE& at, string str){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Determinize(const sAutoNDE& at){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   sAutoNDE r;
   return r;
@@ -339,13 +373,13 @@ sAutoNDE Determinize(const sAutoNDE& at){
 
 
 // -----------------------------------------------------------------------------
-// Fonctions Ã  complÃ©ter pour la seconde partie du projet
+// Fonctions à compléter pour la seconde partie du projet
 // -----------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////
 
 ostream& operator<<(ostream& out, const sAutoNDE& at){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return out;
 }
@@ -354,7 +388,7 @@ ostream& operator<<(ostream& out, const sAutoNDE& at){
 ////////////////////////////////////////////////////////////////////////////////
 
 bool ToGraph(sAutoNDE& at, string path){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return true;
 }
@@ -363,7 +397,7 @@ bool ToGraph(sAutoNDE& at, string path){
 ////////////////////////////////////////////////////////////////////////////////
 
 bool ToJflap(sAutoNDE& at, string path){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return true;
 }
@@ -371,10 +405,10 @@ bool ToJflap(sAutoNDE& at, string path){
 ////////////////////////////////////////////////////////////////////////////////
 
 // fonction outil : on garde x, et on "ajoute" trans et epsilon de y
-// en renommant ses Ã©tats, id est en dÃ©callant les indices des Ã©tats de y
+// en renommant ses états, id est en décallant les indices des états de y
 // de x.nb_etats
 sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
   assert(x.nb_symbs == y.nb_symbs);
   sAutoNDE r;
 
@@ -384,7 +418,7 @@ sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   assert(x.nb_symbs == y.nb_symbs);
   sAutoNDE r = Append(x, y);
@@ -396,7 +430,7 @@ sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
 
 
 sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   assert(x.nb_symbs == y.nb_symbs);
   sAutoNDE r = Append(x, y);
@@ -407,7 +441,7 @@ sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Complement(const sAutoNDE& x){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return x;
 }
@@ -416,7 +450,7 @@ sAutoNDE Complement(const sAutoNDE& x){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Kleene(const sAutoNDE& x){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return x;
 }
@@ -425,7 +459,7 @@ sAutoNDE Kleene(const sAutoNDE& x){
 
 // Intersection avec la loi de De Morgan
 sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   return x;
 }
@@ -434,7 +468,7 @@ sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
 
 // Intersection avec l'automate produit
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   sAutoNDE r;
 
@@ -444,7 +478,7 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Minimize(const sAutoNDE& at){
-  //TODO dÃ©finir cette fonction
+  //TODO définir cette fonction
 
   assert(EstDeterministe(at));
   sAutoNDE r;
@@ -456,21 +490,21 @@ sAutoNDE Minimize(const sAutoNDE& at){
 
 void Help(ostream& out, char *s){
   out << "Utilisation du programme " << s << " :" << endl ;
-  out << "-acc ou -accept Input Word:\n\t dÃ©termine si le mot Word est acceptÃ©" << endl;
-  out << "-det ou -determinize Input :\n\t dÃ©terminise Input" << endl;
+  out << "-acc ou -accept Input Word:\n\t détermine si le mot Word est accepté" << endl;
+  out << "-det ou -determinize Input :\n\t déterminise Input" << endl;
   out << "-cup ou -union Input1 Input2 :\n\t calcule l'union" << endl;
-  out << "-cat ou -concat Input1 Input2 :\n\t calcul la concatÃ©nation" << endl;
+  out << "-cat ou -concat Input1 Input2 :\n\t calcul la concaténation" << endl;
   out << "-star ou -kleene Input :\n\t calcul de A*" << endl;
-  out << "-bar ou -complement Input :\n\t calcul du complÃ©ment" << endl;
+  out << "-bar ou -complement Input :\n\t calcul du complément" << endl;
   out << "-cap ou -intersection Input1 Input2 :\n\t calcul de l'intersection par la loi de De Morgan" << endl;
   out << "-prod ou -produit Input1 Input2 :\n\t calcul de l'intersection par construction de l'automate produit" << endl;
 /*
-  out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant Ã  l'expression rationnelle" << endl;
+  out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
 */
-  out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant Ã  Input" << endl;
+  out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant à Input" << endl;
   out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
 
-  out << "-o ou -output Output :\n\t Ã©crire le rÃ©sultat dans le fichier Output, afficher sur STDOUT si non spÃ©cifiÃ©" << endl;
+  out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
   out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
 
   out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;
@@ -485,17 +519,35 @@ void Help(ostream& out, char *s){
 
 int main(int argc, char* argv[] ){
 	sAutoNDE graphe_a, graphe_b, graphe_c;
-	FromFileTxt(graphe_a, "exemples/automate_D_ex1.txt");
-	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
+	FromFileTxt(graphe_a, "exemples/automate_NDE_ex5.txt");
 
-	//cout << tr[0][0].begin() << endl;
+	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
 	/*cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_a.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_b.finaux) << endl;*/
 
-	if(FromFile(graphe_c, "exemples/00_test.jff")){
-        affiche(graphe_c);
-	}
+    afficheAutom(graphe_a);
+    if(EstDeterministe(graphe_a)){
+        cout << "Deterministe..." << endl;
+    }
+    else{
+        cout << "Non deterministe" << endl;
+    }
+    cout << endl;
+    etatset_t tab;
+    tab.insert(1);
+    //tab.insert(1);
+    Fermeture(graphe_a, tab);
+
+	/*if(FromFile(graphe_c, "exemples/00_test.jff")){
+        afficheAutom(graphe_c);
+        if(EstDeterministe(graphe_c)){
+            cout << "Deterministe..." << endl;
+        }
+        else{
+            cout << "Non deterministe" << endl;
+        }
+	}*/
 
 
   //~ if(argc < 3){
@@ -505,13 +557,13 @@ int main(int argc, char* argv[] ){
   //~
   //~ int pos;
   //~ int act=-1;                 // pos et act pour savoir quelle action effectuer
-  //~ int nb_files = 0;           // nombre de fichiers en entrÃ©e
+  //~ int nb_files = 0;           // nombre de fichiers en entrée
   //~ string str, in1, in2, out, acc, expr;
-  //~ // chaines pour (resp.) tampon; fichier d'entrÃ©e Input1; fichier d'entrÃ©e Input2;
-  //~ // fichier de sortie et chaine dont l'acceptation est Ã  tester
+  //~ // chaines pour (resp.) tampon; fichier d'entrée Input1; fichier d'entrée Input2;
+  //~ // fichier de sortie et chaine dont l'acceptation est à tester
   //~ bool toFile=false, graphMode=false, jflapMode=false;     // sortie STDOUT ou fichier ? Si fichier, format graphviz ? Jflap ?
 //~
-  //~ // options acceptÃ©es
+  //~ // options acceptées
   //~ const size_t NBOPT = 14;
   //~ string aLN[] = {"accept", "determinize", "union", "concat", "kleene", "complement", "intersection", "produit", "expressionrationnelle2automate", "minimisation", "no_operation", "output", "graph", "jflap"};
   //~ string aSN[] = {"acc", "det", "cup", "cat", "star", "bar", "cap", "prod", "expr2aut", "min", "nop", "o", "g", "j"};
@@ -530,7 +582,7 @@ int main(int argc, char* argv[] ){
       //~ pos = pS - aSN;
       //~
     //~ if(pos != -1){
-      //~ // (pos != -1) <=> on a trouvÃ© une option longue ou courte
+      //~ // (pos != -1) <=> on a trouvé une option longue ou courte
       //~ if (DEBUG) cerr << "Key found (" << pos << ") : " << str << endl;
       //~ switch (pos) {
         //~ case 0: //acc
@@ -603,7 +655,7 @@ int main(int argc, char* argv[] ){
     //~
     //~ if(pos<11){
       //~ if(act > -1){
-        //~ cerr << "Plusieurs actions spÃ©cififÃ©es"<< endl;
+        //~ cerr << "Plusieurs actions spécififées"<< endl;
         //~ return EXIT_FAILURE;
       //~ }
       //~ else
@@ -612,12 +664,12 @@ int main(int argc, char* argv[] ){
   //~ }
   //~
   //~ if (act == -1){
-    //~ cerr << "Pas d'action spÃ©cififÃ©e"<< endl;
+    //~ cerr << "Pas d'action spécififée"<< endl;
     //~ return EXIT_FAILURE;
   //~ }
 //~
 //~ /* Les options sont OK, on va essayer de lire le(s) automate(s) at1 (et at2)
-//~ et effectuer l'action spÃ©cifiÃ©e. Atr stockera le rÃ©sultat*/
+//~ et effectuer l'action spécifiée. Atr stockera le résultat*/
 //~
   //~ sAutoNDE at1, at2, atr;
   //~
@@ -632,7 +684,7 @@ int main(int argc, char* argv[] ){
   //~
   //~ switch(act) {
   //~ case 0: //acc
-    //~ cout << "'" << acc << "' est acceptÃ©: " << Accept(at1, acc) << endl;
+    //~ cout << "'" << acc << "' est accepté: " << Accept(at1, acc) << endl;
     //~ atr = at1;
     //~ break;
   //~ case 1: //det
@@ -671,7 +723,7 @@ int main(int argc, char* argv[] ){
     //~ return EXIT_FAILURE;
   //~ }
 //~
-  //~ // on affiche le rÃ©sultat ou on l'Ã©crit dans un fichier
+  //~ // on affiche le résultat ou on l'écrit dans un fichier
   //~ if(!toFile)
     //~ cout << atr;
   //~ else{
@@ -694,7 +746,7 @@ int main(int argc, char* argv[] ){
 
 
 
-void affiche(sAutoNDE autom){
+void afficheAutom(sAutoNDE autom){
     cout << endl << "Nombre etats : " << autom.nb_etats << endl;
     cout << "Nombre finaux : " << autom.nb_finaux << endl;
     cout << "Nombre symboles : " << autom.nb_symbs << endl << endl;
@@ -728,17 +780,15 @@ void affiche(sAutoNDE autom){
     cout << "Transitions : " << endl;
     for(int i=0; i < autom.trans.size(); i++){
         for(int j=0; j < autom.trans[i].size(); j++){
-            set<etat_t>::iterator itK;
-            for(itK = autom.trans[i][j].begin(); itK != autom.trans[i][j].end(); itK++){
-                cout << "\t" << i << " " << (char)(j+ASCII_A) << " " <<  *itK << endl;
+            for(itSet = autom.trans[i][j].begin(); itSet != autom.trans[i][j].end(); itSet++){
+                cout << "\t" << i << " " << (char)(j+ASCII_A) << " " <<  *itSet << endl;
             }
         }
     }
     cout << endl << "Ep transitions : " << endl;
     for(int i=0; i < autom.epsilon.size(); i++){
-        set<etat_t>::iterator itK;
-        for(itK = autom.epsilon[i].begin(); itK != autom.epsilon[i].end(); itK++){
-            cout << "\t" << i << " e " <<  *itK << endl;
+        for(itSet = autom.epsilon[i].begin(); itSet != autom.epsilon[i].end(); itSet++){
+            cout << "\t" << i << " e " <<  *itSet << endl;
         }
     }
 }
