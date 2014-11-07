@@ -49,7 +49,7 @@ struct sAutoNDE{
 	// matrice de transition : trans_t peut être un int***, une structure dynamique 3D comme vector< vector< set<int> > >
 	// ou une autre structure de donnée de votre choix.
 
-	epsilon_t epsilon; 
+	epsilon_t epsilon;
 	// transitions spontanées : epsilon_t peut être un int**, une structure dynamique 2D comme vector< set<int> >
 	// ou une autre structure de donnée de votre choix.
 };
@@ -81,7 +81,8 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Minimize(const sAutoNDE& at);
 void Help(ostream& out, char *s);
 
-
+// Permet d'afficher les données de l'automate en console
+void affiche(sAutoNDE autom);
 
 
 
@@ -106,8 +107,8 @@ bool FromFile(sAutoNDE& at, string path){
 }
 
 bool FromFileTxt(sAutoNDE& at, string path){
-	
-	ifstream myfile(path.c_str(), ios::in); 
+
+	ifstream myfile(path.c_str(), ios::in);
 	//un flux d'entree obtenu à partir du nom du fichier
 	string line;
 	// un ligne lue dans le fichier avec getline(myfile,line);
@@ -120,7 +121,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 
 	if (myfile.is_open()){
 		// la première ligne donne 'nb_etats nb_symbs nb_finaux'
-		do{ 
+		do{
 			getline(myfile,line);
 		} while (line.empty() || line[0]=='#');
 		// on autorise les lignes de commentaires : celles qui commencent par '#'
@@ -128,9 +129,9 @@ bool FromFileTxt(sAutoNDE& at, string path){
 		if((iss >> at.nb_etats).fail() || (iss >> at.nb_symbs).fail() || (iss >> at.nb_finaux).fail())
 			return false;
 		// la deuxième ligne donne l'état initial
-		do{ 
+		do{
 			getline (myfile,line);
-		} while (line.empty() || line[0]=='#');    
+		} while (line.empty() || line[0]=='#');
 		iss.clear();
 		iss.str(line);
 		if((iss >> at.initial).fail())
@@ -138,7 +139,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 
 		// les autres lignes donnent les états finaux
 		for(size_t i = 0; i < at.nb_finaux; i++){
-			do{ 
+			do{
 				getline (myfile,line);
 			} while (line.empty() || line[0]=='#');
 			iss.clear();
@@ -147,26 +148,26 @@ bool FromFileTxt(sAutoNDE& at, string path){
 				continue;
 			//        cerr << "s= " << s << endl;
 			at.finaux.insert(s);
-		}     
+		}
 
 		// on alloue les vectors à la taille connue à l'avance pour éviter les resize dynamiques
 		at.epsilon.resize(at.nb_etats);
 		at.trans.resize(at.nb_etats);
 		for(size_t i=0;i<at.nb_etats;++i)
-			at.trans[i].resize(at.nb_symbs);   
+			at.trans[i].resize(at.nb_symbs);
 
-		// lecture de la relation de transition 
+		// lecture de la relation de transition
 		while(myfile.good()){
 			line.clear();
 			getline (myfile,line);
 			if (line.empty() && line[0]=='#')
 				continue;
 			iss.clear();
-			iss.str(line); 
+			iss.str(line);
 
 			// si une des trois lectures echoue, on passe à la suite
 			if((iss >> s).fail() || (iss >> a).fail() || (iss >> t).fail() || (a< ASCII_A ) || (a> ASCII_Z ))
-				continue; 
+				continue;
 
 			//test espilon ou non
 			if ((a-ASCII_A) >= at.nb_symbs){
@@ -179,7 +180,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 			}
 		}
 		myfile.close();
-		return true; 
+		return true;
 	}
 	return false;
 	// on ne peut pas ouvrir le fichier
@@ -190,7 +191,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 // Fonctions à compléter pour la première partie du projet
 // -----------------------------------------------------------------------------
 
-/* !!! Attention, les balises JFF doivent être dans le bon ordre 
+/* !!! Attention, les balises JFF doivent être dans le bon ordre
  * pour que cette fonction parse le fichier comme il faut */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,6 +212,9 @@ bool FromFileJff(sAutoNDE& at, string path){
 		}
 		elem = elem->NextSiblingElement();
 		// Récupère les états
+		at.nb_etats = 0;
+		at.nb_finaux = 0;
+		at.nb_symbs = 0;
 		while(elem && strcmp(elem->Value(), "state") == 0){
 			at.nb_etats++;
 			int id = atoi(elem->Attribute("id"));
@@ -233,13 +237,14 @@ bool FromFileJff(sAutoNDE& at, string path){
 		for(unsigned int i=0; i < at.nb_etats; i++){
 			at.trans[i].resize(at.nb_etats);
 		}
-		
+
 		set<int> listSymbs; // Liste des symboles trouvés
 		// Récupère le transitions
 		while(elem && strcmp(elem->Value(), "transition") == 0){
 			int from, to, read;
 			bool epsilonTrans = false; // True si on trouve une epsilon transition
 			// On admet que les balise from, to, et read sont présentes
+
 			for(TiXmlElement* tmpEl = elem->FirstChildElement(); tmpEl; tmpEl = tmpEl->NextSiblingElement()){
 				if(strcmp(tmpEl->Value(), "from") == 0){
 					from = atoi(tmpEl->GetText());
@@ -257,9 +262,9 @@ bool FromFileJff(sAutoNDE& at, string path){
 					}
 				}
 			}
-			
+
 			if(epsilonTrans){
-				at.epsilon[0].insert(1);
+				at.epsilon[from].insert(to);
 			}
 			else{
 				at.trans[from][read-ASCII_A].insert(to);
@@ -277,14 +282,14 @@ bool FromFileJff(sAutoNDE& at, string path){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool ContientFinal(const sAutoNDE& at,const etatset_t& e){
-	etatset_t::const_iterator eit(e.begin()), eend(e.end()); 
+bool ContientFinal(const sAutoNDE& at, const etatset_t& e){
+	etatset_t::const_iterator eit(e.begin()), eend(e.end());
 	for(; eit != eend; ++eit){
 		etatset_t::const_iterator atit(at.finaux.begin()), atend(at.finaux.end());
 		for(; atit != atend; ++atit){
 			if(eit == atit) return true;
 		}
-	} 
+	}
 
 	return false;
 }
@@ -341,7 +346,7 @@ sAutoNDE Determinize(const sAutoNDE& at){
 
 ostream& operator<<(ostream& out, const sAutoNDE& at){
   //TODO définir cette fonction
-  
+
   return out;
 }
 
@@ -367,7 +372,7 @@ bool ToJflap(sAutoNDE& at, string path){
 
 // fonction outil : on garde x, et on "ajoute" trans et epsilon de y
 // en renommant ses états, id est en décallant les indices des états de y
-// de x.nb_etats 
+// de x.nb_etats
 sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
   //TODO définir cette fonction
   assert(x.nb_symbs == y.nb_symbs);
@@ -395,7 +400,7 @@ sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
 
   assert(x.nb_symbs == y.nb_symbs);
   sAutoNDE r = Append(x, y);
-  
+
   return r;
 }
 
@@ -412,7 +417,7 @@ sAutoNDE Complement(const sAutoNDE& x){
 
 sAutoNDE Kleene(const sAutoNDE& x){
   //TODO définir cette fonction
-  
+
   return x;
 }
 
@@ -467,7 +472,7 @@ void Help(ostream& out, char *s){
 
   out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
   out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
-  
+
   out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;
   out << "Exemple '" << s << " -minimisation test.jff -output min -j'" << endl;
 }
@@ -482,36 +487,35 @@ int main(int argc, char* argv[] ){
 	sAutoNDE graphe_a, graphe_b, graphe_c;
 	FromFileTxt(graphe_a, "exemples/automate_D_ex1.txt");
 	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
-	trans_t tr = graphe_a.trans;
-	
+
 	//cout << tr[0][0].begin() << endl;
 	/*cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_a.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_b.finaux) << endl;*/
-	
+
 	if(FromFile(graphe_c, "exemples/00_test.jff")){
-		
+        affiche(graphe_c);
 	}
-		 
-	
+
+
   //~ if(argc < 3){
     //~ Help(cout, argv[0]);
     //~ return EXIT_FAILURE;
   //~ }
-  //~ 
+  //~
   //~ int pos;
   //~ int act=-1;                 // pos et act pour savoir quelle action effectuer
   //~ int nb_files = 0;           // nombre de fichiers en entrée
   //~ string str, in1, in2, out, acc, expr;
   //~ // chaines pour (resp.) tampon; fichier d'entrée Input1; fichier d'entrée Input2;
-  //~ // fichier de sortie et chaine dont l'acceptation est à tester 
+  //~ // fichier de sortie et chaine dont l'acceptation est à tester
   //~ bool toFile=false, graphMode=false, jflapMode=false;     // sortie STDOUT ou fichier ? Si fichier, format graphviz ? Jflap ?
-//~ 
+//~
   //~ // options acceptées
   //~ const size_t NBOPT = 14;
   //~ string aLN[] = {"accept", "determinize", "union", "concat", "kleene", "complement", "intersection", "produit", "expressionrationnelle2automate", "minimisation", "no_operation", "output", "graph", "jflap"};
   //~ string aSN[] = {"acc", "det", "cup", "cat", "star", "bar", "cap", "prod", "expr2aut", "min", "nop", "o", "g", "j"};
-  //~ 
+  //~
   //~ // on essaie de "parser" chaque option de la ligne de commande
   //~ for(int i=1; i<argc; ++i){
     //~ if (DEBUG) cerr << "argv[" << i << "] = '" << argv[i] << "'" << endl;
@@ -519,12 +523,12 @@ int main(int argc, char* argv[] ){
     //~ pos = -1;
     //~ string* pL = find(aLN, aLN+NBOPT, str.substr(1));
     //~ string* pS = find(aSN, aSN+NBOPT, str.substr(1));
-    //~ 
+    //~
     //~ if(pL!=aLN+NBOPT)
       //~ pos = pL - aLN;
     //~ if(pS!=aSN+NBOPT)
-      //~ pos = pS - aSN;   
-      //~ 
+      //~ pos = pS - aSN;
+      //~
     //~ if(pos != -1){
       //~ // (pos != -1) <=> on a trouvé une option longue ou courte
       //~ if (DEBUG) cerr << "Key found (" << pos << ") : " << str << endl;
@@ -577,7 +581,7 @@ int main(int argc, char* argv[] ){
         //~ case 10: //nop
           //~ in1 = argv[++i];
 	  //~ nb_files = 1;
-          //~ break;          
+          //~ break;
         //~ case 11: //o
           //~ toFile = true;
           //~ out = argv[++i];
@@ -596,7 +600,7 @@ int main(int argc, char* argv[] ){
       //~ cerr << "Option inconnue "<< str << endl;
       //~ return EXIT_FAILURE;
     //~ }
-    //~ 
+    //~
     //~ if(pos<11){
       //~ if(act > -1){
         //~ cerr << "Plusieurs actions spécififées"<< endl;
@@ -604,28 +608,28 @@ int main(int argc, char* argv[] ){
       //~ }
       //~ else
         //~ act = pos;
-    //~ }    
+    //~ }
   //~ }
-  //~ 
+  //~
   //~ if (act == -1){
     //~ cerr << "Pas d'action spécififée"<< endl;
     //~ return EXIT_FAILURE;
-  //~ }  
-//~ 
+  //~ }
+//~
 //~ /* Les options sont OK, on va essayer de lire le(s) automate(s) at1 (et at2)
 //~ et effectuer l'action spécifiée. Atr stockera le résultat*/
-//~ 
+//~
   //~ sAutoNDE at1, at2, atr;
-  //~ 
+  //~
   //~ if ((nb_files == 1 or nb_files == 2) and !FromFile(at1, in1)){
     //~ cerr << "Erreur de lecture " << in1 << endl;
     //~ return EXIT_FAILURE;
-  //~ }  
+  //~ }
   //~ if (nb_files ==2 and !FromFile(at2, in2)){
     //~ cerr << "Erreur de lecture " << in2 << endl;
     //~ return EXIT_FAILURE;
-  //~ }  
-  //~ 
+  //~ }
+  //~
   //~ switch(act) {
   //~ case 0: //acc
     //~ cout << "'" << acc << "' est accepté: " << Accept(at1, acc) << endl;
@@ -635,10 +639,10 @@ int main(int argc, char* argv[] ){
     //~ atr = Determinize(at1);
     //~ break;
   //~ case 2: //cup
-    //~ atr =  Union(at1, at2); 
+    //~ atr =  Union(at1, at2);
     //~ break;
   //~ case 3: //cat
-    //~ atr =  Concat(at1, at2); 
+    //~ atr =  Concat(at1, at2);
     //~ break;
   //~ case 4: //star
     //~ atr =  Kleene(at1);
@@ -666,7 +670,7 @@ int main(int argc, char* argv[] ){
   //~ default:
     //~ return EXIT_FAILURE;
   //~ }
-//~ 
+//~
   //~ // on affiche le résultat ou on l'écrit dans un fichier
   //~ if(!toFile)
     //~ cout << atr;
@@ -678,12 +682,64 @@ int main(int argc, char* argv[] ){
     //~ if(jflapMode){
       //~ ToJflap(atr, out + ".jff");
     //~ }
-    //~ ofstream f((out + ".txt").c_str(), ios::trunc); 
+    //~ ofstream f((out + ".txt").c_str(), ios::trunc);
     //~ if(f.fail())
       //~ return EXIT_FAILURE;
-    //~ f << atr;    
+    //~ f << atr;
   //~ }
-  
+
   return EXIT_SUCCESS;
+}
+
+
+
+
+void affiche(sAutoNDE autom){
+    cout << endl << "Nombre etats : " << autom.nb_etats << endl;
+    cout << "Nombre finaux : " << autom.nb_finaux << endl;
+    cout << "Nombre symboles : " << autom.nb_symbs << endl << endl;
+    cout << "Initial = " << autom.initial << endl;
+    cout << "Finaux = {";
+    set<etat_t>::iterator itSet;
+    for(itSet = autom.finaux.begin(); itSet != autom.finaux.end(); itSet++){
+        if(itSet != autom.finaux.begin()){
+            cout << ",";
+        }
+        cout << *itSet;
+    }
+    cout << "}" << endl;
+    cout << "Etats = {";
+    for(int i=0; i < autom.nb_etats; i++){
+        if(i != 0){
+            cout << ",";
+        }
+        cout << i;
+    }
+    cout << "}" << endl;
+    cout << "Alphabet = {";
+    for(int i=0; i < autom.nb_symbs; i++){
+        if(i != 0){
+            cout << ",";
+        }
+        cout << (char)(i+ASCII_A);
+    }
+    cout << "}" << endl;
+
+    cout << "Transitions : " << endl;
+    for(int i=0; i < autom.trans.size(); i++){
+        for(int j=0; j < autom.trans[i].size(); j++){
+            set<etat_t>::iterator itK;
+            for(itK = autom.trans[i][j].begin(); itK != autom.trans[i][j].end(); itK++){
+                cout << "\t" << i << " " << (char)(j+ASCII_A) << " " <<  *itK << endl;
+            }
+        }
+    }
+    cout << endl << "Ep transitions : " << endl;
+    for(int i=0; i < autom.epsilon.size(); i++){
+        set<etat_t>::iterator itK;
+        for(itK = autom.epsilon[i].begin(); itK != autom.epsilon[i].end(); itK++){
+            cout << "\t" << i << " e " <<  *itK << endl;
+        }
+    }
 }
 
