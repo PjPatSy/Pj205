@@ -11,6 +11,7 @@
 #include <list>
 #include <cassert>
 #include <utility>
+#include <cmath>
 
 #include "tinyxml/tinyxml.h"
 
@@ -81,7 +82,8 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Minimize(const sAutoNDE& at);
 void Help(ostream& out, char *s);
 
-
+// Utile pour afficher une liste d'état
+ostream& operator<<(ostream& out, etatset_t e);
 
 
 
@@ -390,10 +392,67 @@ bool Accept(const sAutoNDE& at, string str){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Determinize(const sAutoNDE& at){
-    sAutoNDE r;
+    sAutoNDE rAutoD; // Automate déterminisé
     if(!EstDeterministe(at)){
-        return r;
+        const int nbEtatMax = (int)pow(2, at.nb_etats); // Nombre maximum d'états possibles en déterminisant (2^n) avec n le nombre d'état de at
+        map_t corespEtat; // Fait la correspondance entre le numéro d'état dans rAuto, et sa les états qu'il représente dans at
+        rAutoD.nb_etats = 0;
+        rAutoD.nb_symbs = at.nb_symbs;
+        rAutoD.nb_finaux = 0;
+        rAutoD.trans.resize(nbEtatMax); // Alloue le maximum de transitions possibles
+                                        // (Mauvaise optimisation de la mémoire, mais plus simple si les automates ne sont pas trop grands)
+                                        // Cela permet d'économiser du temps de calcul (Resize dynamique dans se cas est plus long)
+        for(int i=0; i < rAutoD.trans[i].size(); i++){
+            rAutoD.trans[i].resize(nbEtatMax);
+        }
+
+        /*   //////////////////////////////////////////////////////////////////////////////////////////
+            ////                             Les epsilon Fermeture                                ////
+           //////////////////////////////////////////////////////////////////////////////////////////    */
+        int offset = 0; // Utile quand 2 états ont la même femeture, on ne doit rajouter qu'un seul état dans l'automate final
+        cout << "Epsilon-fermeture:" << endl;
+        for(int i=0; (i+offset) < at.nb_etats; i++){
+            etatset_t tmp; // Contient l'état dont on doit calculer la fermeture
+            tmp.insert(i);
+            Fermeture(at, tmp);
+            pair<std::map<etatset_t,etat_t>::iterator,bool> res; // Permet d'avoir un retour sur la méthode insert
+            res = corespEtat.insert(pair<etatset_t, etat_t>(tmp, i+offset));
+            cout << "  E(" << i << ") = " << tmp;
+            if(!res.second){ // Si cette fermeture existe déjà, on ne rajoute pas d'état dans l'automate final
+                cout << " = E(" << res.first->second << ")";
+                i--; // Comme on a enregistré aucun état dans la map correspondant à l'état i on reste sur cet indice
+                offset++; // Augmenter l'offset permet de passer l'état suivant dans at même si on est toujours sur le même état dans rAutoD
+            }
+            else{
+                rAutoD.nb_etats++; // Ajoute un nombre d'état seulement si celui-ci n'est pas déjà dans la liste
+            }
+            if((i+offset) == at.initial){
+                // L'état initial de M' est la E-fermeture de l'état initial de M
+                // Si la E-fermeture de M est déja dans la map, l'état initial de M' à l'état déjà dans la map
+                // Sinon l'état init de M' est le nouvel état ajouté (le retour de l'insert permet de réaliser cette condition)
+                rAutoD.initial = res.first->second;
+            }
+            cout << endl;
+        }
+
+        /*   //////////////////////////////////////////////////////////////////////////////////////////
+            ////                             Delta                                                ////
+           //////////////////////////////////////////////////////////////////////////////////////////    */
+
+
+        /*for(map_t::iterator itM = corespEtat.begin(); itM != corespEtat.end(); itM++){
+            etatset_t estE;
+        }*/
+
+
+
+        /*
+            !!!!!!!!!!!!!!!!!!!! Ne pas oublier l'état vide !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        */
+
+        return rAutoD;
     }
+    cout << "L'automate est deja deterministe." << endl;
     return at;
 }
 
@@ -588,7 +647,7 @@ void Help(ostream& out, char *s){
 
 int main(int argc, char* argv[] ){
 	sAutoNDE graphe_a, graphe_b;
-	FromFileTxt(graphe_a, "exemples/automate_NDE_ex1.txt");
+	FromFileTxt(graphe_a, "exemples/automate_NDE_ex2.txt");
 
 	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
 	/*cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
@@ -604,12 +663,16 @@ int main(int argc, char* argv[] ){
     }
     cout << endl;
 
-    if(Accept(graphe_a, "acaccccc")){
+    sAutoNDE graphe_aD = Determinize(graphe_a);
+
+
+
+    /*if(Accept(graphe_a, "acaccccc")){
         cout << "Mot accepte" << endl;
     }
     else{
         cout << "Mot non accepte" << endl;
-    }
+    }*/
     /*etatset_t tab;
     tab.insert(3);
     tab.insert(0);
@@ -826,5 +889,16 @@ int main(int argc, char* argv[] ){
   return EXIT_SUCCESS;
 }
 
-
+// Utile pour afficher une liste d'état
+ostream& operator<<(ostream& out, etatset_t e){
+    out << "{";
+    for(etatset_t::iterator it = e.begin(); it != e.end(); it++){
+        if(it != e.begin()){
+            out << ", ";
+        }
+        out << *it;
+    }
+    out << "}";
+    return out;
+}
 
