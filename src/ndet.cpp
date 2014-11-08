@@ -81,8 +81,6 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Minimize(const sAutoNDE& at);
 void Help(ostream& out, char *s);
 
-// Permet d'afficher les données de l'automate en console
-void afficheAutom(sAutoNDE autom);
 
 
 
@@ -286,17 +284,16 @@ bool ContientFinal(const sAutoNDE& at, const etatset_t& e){
 	for(; eit != eend; ++eit){
 		etatset_t::const_iterator atit(at.finaux.begin()), atend(at.finaux.end());
 		for(; atit != atend; ++atit){
-			if(eit == atit) return true;
+			if(*eit == *atit) return true;
 		}
 	}
-
 	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool EstDeterministe(const sAutoNDE& at){
-    // Si on trouve un esplion transition, le graphe est non déterministe
+    // Si on trouve une esplion transition, le graphe est non déterministe
     for(int i=0; i < at.epsilon.size(); i++){
         if(!at.epsilon[i].empty()){
             return false;
@@ -321,27 +318,28 @@ void Fermeture(const sAutoNDE& at, etatset_t& e){
     // Cette fonction clot l'ensemble d'états E={e_0, e_1, ... ,e_n} passé en
     // paramètre avec les epsilon transitions
 
-    etatset_t::iterator itEt, itEps;
-    etatset_t fermeture = e;
+    /* Il est possible d'écrire cette fonction en récursif, mais cela utilise plus de temps de calcul
+    *  car on repart de la liste des états de base + les nouveau ajouter.
+    *  Alors qu'ici on traite d'abords les états de base et indépendement les nouveau ajoutés
+    */
 
-    etatset_t tmp1 = e;
-    while(!tmp1.empty()){
-        etatset_t tmp2;
+    etatset_t::iterator itEt, itEps;
+    etatset_t tmp1 = e; // tmp1 : liste d'état temporaire, à chaque fois qu'on trouve
+    do
+    {
+        etatset_t tmp2; // tmp2 : liste d'état, à chaque fois qu'on trouve un nouvel état par une e transition, on l'ajoute
         for(int i=0; i < at.epsilon.size(); i++){
             itEt = tmp1.find(i);
             if(itEt != tmp1.end() && !at.epsilon[i].empty()){
                 for(itEps = at.epsilon[i].begin(); itEps != at.epsilon[i].end(); itEps++){
-                    if(e.insert(*itEps).second){
+                    if(e.insert(*itEps).second){ // Si l'état inséré n'est pas déjà dans la liste d'états
                         tmp2.insert(*itEps);
                     }
                 }
             }
         }
-        tmp1 = tmp2;
-    }
-    for(itEt = e.begin(); itEt != e.end(); itEt++){
-        cout << "etat : " << *itEt << endl;
-    }
+        tmp1 = tmp2; // On se déplace sur les nouveaux état(noeuds)
+    }while(!tmp1.empty());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,26 +347,54 @@ void Fermeture(const sAutoNDE& at, etatset_t& e){
 etatset_t Delta(const sAutoNDE& at, const etatset_t& e, symb_t c){
   //TODO sur la base de celle pour le cas sans transitions spontanées,
   // définir cette fonction en utilisant Fermeture
+    int numCar = c - ASCII_A; // Numéro du caractère
+    etatset_t D_etat; // Liste des états par Delta
 
+    if(numCar > at.nb_etats){ // Si le caractère n'est pas dans l'alphabet
+        return D_etat; // Retour une liste d'état vide
+    }
 
-    return e;
+    for(int i=0; i < at.trans.size(); i++){
+        if(e.find(i) != e.end() && !at.trans[i][numCar].empty()){ // l'état i est demandé et sa transision par c existe
+            set<etat_t>::iterator itTrans;
+            for(itTrans = at.trans[i][numCar].begin(); itTrans != at.trans[i][numCar].end(); itTrans++){
+                D_etat.insert(*itTrans);
+            }
+        }
+    }
+
+    Fermeture(at, D_etat); // Retourne la fermeture par e-transition des états trouvés
+    return D_etat;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool Accept(const sAutoNDE& at, string str){
-  //TODO définir cette fonction
+    etatset_t tmp; // Liste d'état temporaire, qui sera changée à chaque transition
+    tmp.insert(at.initial);
+    Fermeture(at, tmp);
+    while(!str.empty()){
+        tmp = Delta(at, tmp, str[0]);
+        if(tmp.empty()){ // Si aucun état n'a pour transition la lettre i, le mot n'est pas valide
+            return false;
+        }
+        str = str.substr(1);
+    }
 
-  return false;
+    if(ContientFinal(at, tmp)){
+        return true;
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Determinize(const sAutoNDE& at){
-  //TODO définir cette fonction
-
-  sAutoNDE r;
-  return r;
+    sAutoNDE r;
+    if(!EstDeterministe(at)){
+        return r;
+    }
+    return at;
 }
 
 
@@ -379,7 +405,50 @@ sAutoNDE Determinize(const sAutoNDE& at){
 ////////////////////////////////////////////////////////////////////////////////
 
 ostream& operator<<(ostream& out, const sAutoNDE& at){
-  //TODO définir cette fonction
+    out << endl << "Nombre etats : " << at.nb_etats << endl;
+    out << "Nombre finaux : " << at.nb_finaux << endl;
+    out << "Nombre symboles : " << at.nb_symbs << endl << endl;
+    out << "Initial = " << at.initial << endl;
+    out << "Finaux = {";
+    set<etat_t>::iterator itSet;
+    for(itSet = at.finaux.begin(); itSet != at.finaux.end(); itSet++){
+        if(itSet != at.finaux.begin()){
+            out << ",";
+        }
+        out << *itSet;
+    }
+    out << "}" << endl;
+    out << "Etats = {";
+    for(int i=0; i < at.nb_etats; i++){
+        if(i != 0){
+            out << ",";
+        }
+        out << i;
+    }
+    out << "}" << endl;
+    out << "Alphabet = {";
+    for(int i=0; i < at.nb_symbs; i++){
+        if(i != 0){
+            out << ",";
+        }
+        out << (char)(i+ASCII_A);
+    }
+    out << "}" << endl;
+
+    out << "Transitions : " << endl;
+    for(int i=0; i < at.trans.size(); i++){
+        for(int j=0; j < at.trans[i].size(); j++){
+            for(itSet = at.trans[i][j].begin(); itSet != at.trans[i][j].end(); itSet++){
+                out << "\t" << i << " " << (char)(j+ASCII_A) << " " <<  *itSet << endl;
+            }
+        }
+    }
+    out << endl << "Ep transitions : " << endl;
+    for(int i=0; i < at.epsilon.size(); i++){
+        for(itSet = at.epsilon[i].begin(); itSet != at.epsilon[i].end(); itSet++){
+            out << "\t" << i << " e " <<  *itSet << endl;
+        }
+    }
 
   return out;
 }
@@ -518,15 +587,15 @@ void Help(ostream& out, char *s){
 
 
 int main(int argc, char* argv[] ){
-	sAutoNDE graphe_a, graphe_b, graphe_c;
-	FromFileTxt(graphe_a, "exemples/automate_NDE_ex5.txt");
+	sAutoNDE graphe_a, graphe_b;
+	FromFileTxt(graphe_a, "exemples/automate_NDE_ex1.txt");
 
 	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
 	/*cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_a.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_b.finaux) << endl;*/
 
-    afficheAutom(graphe_a);
+    cout << graphe_a << endl;
     if(EstDeterministe(graphe_a)){
         cout << "Deterministe..." << endl;
     }
@@ -534,10 +603,24 @@ int main(int argc, char* argv[] ){
         cout << "Non deterministe" << endl;
     }
     cout << endl;
-    etatset_t tab;
-    tab.insert(1);
-    //tab.insert(1);
+
+    if(Accept(graphe_a, "acaccccc")){
+        cout << "Mot accepte" << endl;
+    }
+    else{
+        cout << "Mot non accepte" << endl;
+    }
+    /*etatset_t tab;
+    tab.insert(3);
+    tab.insert(0);
     Fermeture(graphe_a, tab);
+
+    etatset_t D_etat = Delta(graphe_a, tab, 'b');
+    etatset_t::iterator it;
+    for(it = D_etat.begin(); it != D_etat.end(); it++){
+        cout << "D etat : " << *it << endl;
+    }*/
+
 
 	/*if(FromFile(graphe_c, "exemples/00_test.jff")){
         afficheAutom(graphe_c);
@@ -744,52 +827,4 @@ int main(int argc, char* argv[] ){
 }
 
 
-
-
-void afficheAutom(sAutoNDE autom){
-    cout << endl << "Nombre etats : " << autom.nb_etats << endl;
-    cout << "Nombre finaux : " << autom.nb_finaux << endl;
-    cout << "Nombre symboles : " << autom.nb_symbs << endl << endl;
-    cout << "Initial = " << autom.initial << endl;
-    cout << "Finaux = {";
-    set<etat_t>::iterator itSet;
-    for(itSet = autom.finaux.begin(); itSet != autom.finaux.end(); itSet++){
-        if(itSet != autom.finaux.begin()){
-            cout << ",";
-        }
-        cout << *itSet;
-    }
-    cout << "}" << endl;
-    cout << "Etats = {";
-    for(int i=0; i < autom.nb_etats; i++){
-        if(i != 0){
-            cout << ",";
-        }
-        cout << i;
-    }
-    cout << "}" << endl;
-    cout << "Alphabet = {";
-    for(int i=0; i < autom.nb_symbs; i++){
-        if(i != 0){
-            cout << ",";
-        }
-        cout << (char)(i+ASCII_A);
-    }
-    cout << "}" << endl;
-
-    cout << "Transitions : " << endl;
-    for(int i=0; i < autom.trans.size(); i++){
-        for(int j=0; j < autom.trans[i].size(); j++){
-            for(itSet = autom.trans[i][j].begin(); itSet != autom.trans[i][j].end(); itSet++){
-                cout << "\t" << i << " " << (char)(j+ASCII_A) << " " <<  *itSet << endl;
-            }
-        }
-    }
-    cout << endl << "Ep transitions : " << endl;
-    for(int i=0; i < autom.epsilon.size(); i++){
-        for(itSet = autom.epsilon[i].begin(); itSet != autom.epsilon[i].end(); itSet++){
-            cout << "\t" << i << " e " <<  *itSet << endl;
-        }
-    }
-}
 
