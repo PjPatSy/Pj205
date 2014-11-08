@@ -396,7 +396,6 @@ sAutoNDE Determinize(const sAutoNDE& at){
     if(!EstDeterministe(at)){
         const int nbEtatMax = (int)pow(2, at.nb_etats); // Nombre maximum d'états possibles en déterminisant (2^n) avec n le nombre d'état de at
         map_t corespEtat; // Fait la correspondance entre le numéro d'état dans rAuto, et sa les états qu'il représente dans at
-        rAutoD.nb_etats = 0;
         rAutoD.nb_symbs = at.nb_symbs;
         rAutoD.nb_finaux = 0;
         rAutoD.trans.resize(nbEtatMax); // Alloue le maximum de transitions possibles
@@ -424,7 +423,9 @@ sAutoNDE Determinize(const sAutoNDE& at){
                 offset++; // Augmenter l'offset permet de passer l'état suivant dans at même si on est toujours sur le même état dans rAutoD
             }
             else{
-                rAutoD.nb_etats++; // Ajoute un nombre d'état seulement si celui-ci n'est pas déjà dans la liste
+                if(ContientFinal(at, tmp)){
+                    rAutoD.finaux.insert(i); // Ajoute l'état actuel comme final
+                }
             }
             if((i+offset) == at.initial){
                 // L'état initial de M' est la E-fermeture de l'état initial de M
@@ -435,20 +436,47 @@ sAutoNDE Determinize(const sAutoNDE& at){
             cout << endl;
         }
 
+        cout << "Initial : " << rAutoD.initial << endl;
+
         /*   //////////////////////////////////////////////////////////////////////////////////////////
             ////                             Delta                                                ////
            //////////////////////////////////////////////////////////////////////////////////////////    */
 
 
-        /*for(map_t::iterator itM = corespEtat.begin(); itM != corespEtat.end(); itM++){
-            etatset_t estE;
-        }*/
+        map_t tmpMap1 = corespEtat; // Map temporaire permettant de se déplacer d'enregistrer les états dès qu'on se déplace dans l'automate
+        map_t tmpMap2;
 
+        while(!tmpMap1.empty()){
+            for(map_t::iterator itM = tmpMap1.begin(); itM != tmpMap1.end(); itM++){
+                for(int i=0; i < rAutoD.nb_symbs; i++){
+                    pair<std::map<etatset_t,etat_t>::iterator,bool> res;
+                    etatset_t deltaRes = Delta(at, itM->first, (char)(i+ASCII_A));
+                    res = corespEtat.insert(pair<etatset_t, etat_t>(deltaRes, corespEtat.size()));
+                    cout << itM->first << " -> " << deltaRes << " : " << res.second << endl;
+                    if(res.second){ // Si on a un nouvel ensemble
+                        tmpMap2.insert(pair<etatset_t, etat_t>(deltaRes, 0));
+                        if(ContientFinal(at, deltaRes)){
+                            rAutoD.finaux.insert(res.first->second);
+                        }
+                    }
+                }
+            }
+            tmpMap1 = tmpMap2;
+            tmpMap2.clear();
+        }
 
-
-        /*
-            !!!!!!!!!!!!!!!!!!!! Ne pas oublier l'état vide !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        */
+        rAutoD.nb_etats = corespEtat.size();
+        cout << "Nouveau etats (" << corespEtat.size() << ") :" << endl;
+        for(map_t::iterator itM = corespEtat.begin(); itM != corespEtat.end(); itM++){
+            cout <<itM->second << " : " << itM->first;
+            if(itM->second == rAutoD.initial){
+                cout << " (initial)";
+            }
+            if(rAutoD.finaux.find(itM->second) != rAutoD.finaux.end()){
+                cout << " (final)";
+            }
+            cout << endl;
+        }
 
         return rAutoD;
     }
@@ -647,7 +675,7 @@ void Help(ostream& out, char *s){
 
 int main(int argc, char* argv[] ){
 	sAutoNDE graphe_a, graphe_b;
-	FromFileTxt(graphe_a, "exemples/automate_NDE_ex2.txt");
+	FromFileTxt(graphe_a, "exemples/automate_NDE_ex1.txt");
 
 	//FromFileTxt(graphe_b, "exemples/automate_D_ex2.txt");
 	/*cout << ContientFinal(graphe_a, graphe_b.finaux) << endl;
