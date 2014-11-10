@@ -18,7 +18,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f ndet src/*.o src/*~ *~ 
+	rm -f ndet src/*.o src/tinyxml/*.o src/*~ *~ 
   # $(EXECUTABLE)
 
 mrporper:
