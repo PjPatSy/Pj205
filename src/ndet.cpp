@@ -84,7 +84,7 @@ void Help(ostream& out, char *s);
 
 // Utile pour afficher une liste d'état
 ostream& operator<<(ostream& out, etatset_t e);
-
+string toStringEtatset(etatset_t e);
 
 
 
@@ -401,10 +401,9 @@ sAutoNDE Determinize(const sAutoNDE& at){
         rAutoD.trans.resize(nbEtatMax); // Alloue le maximum de transitions possibles
                                         // (Mauvaise optimisation de la mémoire, mais plus simple si les automates ne sont pas trop grands)
                                         // Cela permet d'économiser du temps de calcul (Resize dynamique dans se cas est plus long)
-        for(int i=0; i < rAutoD.trans[i].size(); i++){
+        for(int i=0; i < rAutoD.trans.size(); i++){
             rAutoD.trans[i].resize(nbEtatMax);
         }
-
         /*   //////////////////////////////////////////////////////////////////////////////////////////
             ////                             Les epsilon Fermeture                                ////
            //////////////////////////////////////////////////////////////////////////////////////////    */
@@ -436,8 +435,6 @@ sAutoNDE Determinize(const sAutoNDE& at){
             cout << endl;
         }
 
-        cout << "Initial : " << rAutoD.initial << endl;
-
         /*   //////////////////////////////////////////////////////////////////////////////////////////
             ////                             Delta                                                ////
            //////////////////////////////////////////////////////////////////////////////////////////    */
@@ -445,6 +442,7 @@ sAutoNDE Determinize(const sAutoNDE& at){
 
         map_t tmpMap1 = corespEtat; // Map temporaire permettant de se déplacer d'enregistrer les états dès qu'on se déplace dans l'automate
         map_t tmpMap2;
+        string str = ""; // Contiendra des infos sur les transision, sera affichée à la fin de la fonction
 
         while(!tmpMap1.empty()){
             for(map_t::iterator itM = tmpMap1.begin(); itM != tmpMap1.end(); itM++){
@@ -452,7 +450,16 @@ sAutoNDE Determinize(const sAutoNDE& at){
                     pair<std::map<etatset_t,etat_t>::iterator,bool> res;
                     etatset_t deltaRes = Delta(at, itM->first, (char)(i+ASCII_A));
                     res = corespEtat.insert(pair<etatset_t, etat_t>(deltaRes, corespEtat.size()));
-                    cout << itM->first << " -> " << deltaRes << " : " << res.second << endl;
+                    /* On enregistre la transition (itM->second : numéro de l'état d'où on vient
+                       i : le caractère de transition, res.first->second : l'état ou l'on va) */
+                    rAutoD.trans[itM->second][i].insert(res.first->second);
+                    str += " delta(";
+                    str += toStringEtatset(itM->first);
+                    str += ", ";
+                    str += (char)(i+ASCII_A);
+                    str += ") = ";
+                    str += toStringEtatset(res.first->first);
+                    str += "\n";
                     if(res.second){ // Si on a un nouvel ensemble
                         tmpMap2.insert(pair<etatset_t, etat_t>(deltaRes, 0));
                         if(ContientFinal(at, deltaRes)){
@@ -466,7 +473,8 @@ sAutoNDE Determinize(const sAutoNDE& at){
         }
 
         rAutoD.nb_etats = corespEtat.size();
-        cout << "Nouveau etats (" << corespEtat.size() << ") :" << endl;
+        rAutoD.nb_finaux = rAutoD.finaux.size();
+        cout << endl << "Nouveau etats (" << rAutoD.nb_etats << ") :" << endl;
         for(map_t::iterator itM = corespEtat.begin(); itM != corespEtat.end(); itM++){
             cout <<itM->second << " : " << itM->first;
             if(itM->second == rAutoD.initial){
@@ -478,6 +486,8 @@ sAutoNDE Determinize(const sAutoNDE& at){
             cout << endl;
         }
 
+        cout << endl << "Nouvelles transitions : " << endl;
+        cout << str << endl; // Affiche les transitions
         return rAutoD;
     }
     cout << "L'automate est deja deterministe." << endl;
@@ -682,6 +692,7 @@ int main(int argc, char* argv[] ){
 	cout << ContientFinal(graphe_b, graphe_a.finaux) << endl;
 	cout << ContientFinal(graphe_b, graphe_b.finaux) << endl;*/
 
+    cout << "Avant : " << endl;
     cout << graphe_a << endl;
     if(EstDeterministe(graphe_a)){
         cout << "Deterministe..." << endl;
@@ -691,9 +702,10 @@ int main(int argc, char* argv[] ){
     }
     cout << endl;
 
+
     sAutoNDE graphe_aD = Determinize(graphe_a);
-
-
+    cout << endl << "Apres : " << endl;
+    cout << graphe_aD << endl;
 
     /*if(Accept(graphe_a, "acaccccc")){
         cout << "Mot accepte" << endl;
@@ -922,11 +934,24 @@ ostream& operator<<(ostream& out, etatset_t e){
     out << "{";
     for(etatset_t::iterator it = e.begin(); it != e.end(); it++){
         if(it != e.begin()){
-            out << ", ";
+            out << ",";
         }
         out << *it;
     }
     out << "}";
     return out;
 }
+string toStringEtatset(etatset_t e){
+    string str = "{";
 
+    for(etatset_t::iterator it = e.begin(); it != e.end(); it++){
+        stringstream ss;
+        if(it != e.begin()){
+            str += ",";
+        }
+        ss << *it;
+        str += ss.str();
+    }
+    str += "}";
+    return str;
+}
