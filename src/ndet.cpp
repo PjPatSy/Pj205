@@ -940,8 +940,11 @@ void test(){
 		cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
 		
 		etatset_t f;
+		f.insert(1);
+		f.insert(2);
+		cout << "==> Fermeture " << f <<  " : ";
 		Fermeture(automateTXT, f);
-		cout << "==> Fermeture : " << f << endl;
+		cout << f <<  endl;
 		
 		sAutoNDE automateDeterminise = Determinize(automateTXT);
 		cout << "==> Determinise : " << EstDeterministe(automateDeterminise);
