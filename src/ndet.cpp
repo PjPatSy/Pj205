@@ -30,9 +30,6 @@ typedef vector< vector< etatset_t > >     trans_t;
 typedef vector< etatset_t >               epsilon_t; // --- D'un état a un ou plusieurs états
 typedef map< etatset_t, etat_t >          map_t;
 
-
-////////////////////////////////////////////////////////////////////////////////
-
 struct sAutoNDE{
 	// caractéristiques
 	size_t nb_etats;
@@ -62,7 +59,6 @@ bool FromFileJff(sAutoNDE& at, string path);
 bool FromFile(sAutoNDE& at, string path);
 bool ContientFinal(const sAutoNDE& at,const etatset_t& e);
 
-
 bool EstDeterministe(const sAutoNDE& at);
 void Fermeture(const sAutoNDE& at, etatset_t& e);
 etatset_t Delta(const sAutoNDE& at, const etatset_t& e, symb_t c);
@@ -86,8 +82,9 @@ void Help(ostream& out, char *s);
 ostream& operator<<(ostream& out, etatset_t e);
 string toStringEtatset(etatset_t e);
 
+void test();
 
-
+////////////////////////////////////////////////////////////////////////////////
 
 bool FromFile(sAutoNDE& at, string path){
 
@@ -104,6 +101,8 @@ bool FromFile(sAutoNDE& at, string path){
 	cout << "extension de fichier non reconnue\n";
 	return false;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool FromFileTxt(sAutoNDE& at, string path){
 	ifstream myfile(path.c_str(), ios::in);
@@ -175,7 +174,6 @@ bool FromFileTxt(sAutoNDE& at, string path){
 			else{
 			    at.trans[s][a-ASCII_A].insert(t);
 				cerr << "s=" << s<< ", a=" << a-ASCII_A << ", t=" << t << endl;
-				//TODO remplir trans
 			} 
 		}
 		myfile.close();
@@ -185,16 +183,10 @@ bool FromFileTxt(sAutoNDE& at, string path){
 	// on ne peut pas ouvrir le fichier
 }
 
-
-// -----------------------------------------------------------------------------
-// Fonctions à compléter pour la première partie du projet
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
 /* !!! Attention, les balises JFF doivent être dans le bon ordre
  * pour que cette fonction parse le fichier comme il faut */
-
-////////////////////////////////////////////////////////////////////////////////
-
 bool FromFileJff(sAutoNDE& at, string path){
 	TiXmlDocument doc(path.c_str());
 	if(!doc.LoadFile()){
@@ -232,11 +224,26 @@ bool FromFileJff(sAutoNDE& at, string path){
 			}
 			elem = elem->NextSiblingElement();
 		}
+		// Initialisation du nombre de symboles
+		TiXmlElement* elemTrans = elem;
+		while(elemTrans && strcmp(elemTrans->Value(), "transition") == 0){
+			for(TiXmlElement* tmpEl = elemTrans->FirstChildElement(); tmpEl; tmpEl = tmpEl->NextSiblingElement()){
+				if(strcmp(tmpEl->Value(), "read") == 0){
+					if(tmpEl->GetText() != NULL){
+						if(at.nb_symbs < tmpEl->GetText()[0] - ASCII_A + 1){ // Cas ou on a 'b' et pas 'a', il faut compter 'a'
+							at.nb_symbs = (tmpEl->GetText()[0] - ASCII_A) + 1;
+						}						
+					}
+				}
+			}
+			elemTrans = elemTrans->NextSiblingElement();
+		}
+		
 		// Initialisation des taille des matrices
 		at.epsilon.resize(at.nb_etats);
 		at.trans.resize(at.nb_etats);
 		for(unsigned int i=0; i < at.nb_etats; i++){
-			at.trans[i].resize(at.nb_etats);
+			at.trans[i].resize(at.nb_symbs);
 		}
 
 		set<int> listSymbs; // Liste des symboles trouvés
@@ -263,7 +270,6 @@ bool FromFileJff(sAutoNDE& at, string path){
 					}
 				}
 			}
-
 			if(epsilonTrans){
 				at.epsilon[from].insert(to);
 			}
@@ -272,7 +278,6 @@ bool FromFileJff(sAutoNDE& at, string path){
 			}
 			elem = elem->NextSiblingElement();
 		}
-		at.nb_symbs = listSymbs.size();
 	}
 	else{
 		return false;
@@ -323,13 +328,12 @@ void Fermeture(const sAutoNDE& at, etatset_t& e){
 
     /* Il est possible d'écrire cette fonction en récursif, mais cela utilise plus de temps de calcul
     *  car on repart de la liste des états de base + les nouveau ajouter.
-    *  Alors qu'ici on traite d'abords les états de base et indépendement les nouveau ajoutés
+    *  Alors qu'ici on traite d'abords les états de base et indépendement les nouveaux ajoutés
     */
 
     etatset_t::iterator itEt, itEps;
     etatset_t tmp1 = e; // tmp1 : liste d'état temporaire, à chaque fois qu'on trouve
-    do
-    {
+    do{
         etatset_t tmp2; // tmp2 : liste d'état, à chaque fois qu'on trouve un nouvel état par une e transition, on l'ajoute
         for(size_t i=0; i < at.epsilon.size(); i++){
             itEt = tmp1.find(i);
@@ -405,9 +409,9 @@ sAutoNDE Determinize(const sAutoNDE& at){
         for(size_t i=0; i < rAutoD.trans.size(); i++){
             rAutoD.trans[i].resize(nbEtatMax);
         }
-        /*   //////////////////////////////////////////////////////////////////////////////////////////
-            ////                             Les epsilon Fermeture                                ////
-           //////////////////////////////////////////////////////////////////////////////////////////    */
+          //////////////////////////////////////////////////////////////////////////////////////////
+         ////                             Les epsilon Fermeture                                ////
+        ////////////////////////////////////////////////////////////////////////////////////////// 
         int offset = 0; // Utile quand 2 états ont la même femeture, on ne doit rajouter qu'un seul état dans l'automate final
         cout << "Epsilon-fermeture:" << endl;
         for(size_t i=0; (i+offset) < at.nb_etats; i++){
@@ -436,11 +440,9 @@ sAutoNDE Determinize(const sAutoNDE& at){
             cout << endl;
         }
 
-        /*   //////////////////////////////////////////////////////////////////////////////////////////
-            ////                             Delta                                                ////
-           //////////////////////////////////////////////////////////////////////////////////////////    */
-
-
+          //////////////////////////////////////////////////////////////////////////////////////////
+         ////                             Delta                                                ////
+        ////////////////////////////////////////////////////////////////////////////////////////// 
         map_t tmpMap1 = corespEtat; // Map temporaire permettant de se déplacer d'enregistrer les états dès qu'on se déplace dans l'automate
         map_t tmpMap2;
         string str = ""; // Contiendra des infos sur les transision, sera affichée à la fin de la fonction
@@ -550,359 +552,333 @@ ostream& operator<<(ostream& out, const sAutoNDE& at){
 
   return out;
 }
-
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ bool ToGraph(sAutoNDE& at, string path){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ return true;
-//~ }
-//~ 
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ bool ToJflap(sAutoNDE& at, string path){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ return true;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ // fonction outil : on garde x, et on "ajoute" trans et epsilon de y
-//~ // en renommant ses états, id est en décallant les indices des états de y
-//~ // de x.nb_etats
-//~ sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
-  //~ //TODO définir cette fonction
-  //~ assert(x.nb_symbs == y.nb_symbs);
-  //~ sAutoNDE r;
-//~ 
-  //~ return r;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ assert(x.nb_symbs == y.nb_symbs);
-  //~ sAutoNDE r = Append(x, y);
-//~ 
-  //~ return r;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ 
-//~ sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ assert(x.nb_symbs == y.nb_symbs);
-  //~ sAutoNDE r = Append(x, y);
-//~ 
-  //~ return r;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ sAutoNDE Complement(const sAutoNDE& x){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ return x;
-//~ }
-//~ 
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ sAutoNDE Kleene(const sAutoNDE& x){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ return x;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ // Intersection avec la loi de De Morgan
-//~ sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ return x;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ // Intersection avec l'automate produit
-//~ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ sAutoNDE r;
-//~ 
-  //~ return r;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ sAutoNDE Minimize(const sAutoNDE& at){
-  //~ //TODO définir cette fonction
-//~ 
-  //~ assert(EstDeterministe(at));
-  //~ sAutoNDE r;
-//~ 
-  //~ return r;
-//~ }
-//~ 
-//~ ////////////////////////////////////////////////////////////////////////////////
-//~ 
-//~ void Help(ostream& out, char *s){
-  //~ out << "Utilisation du programme " << s << " :" << endl ;
-  //~ out << "-acc ou -accept Input Word:\n\t détermine si le mot Word est accepté" << endl;
-  //~ out << "-det ou -determinize Input :\n\t déterminise Input" << endl;
-  //~ out << "-cup ou -union Input1 Input2 :\n\t calcule l'union" << endl;
-  //~ out << "-cat ou -concat Input1 Input2 :\n\t calcul la concaténation" << endl;
-  //~ out << "-star ou -kleene Input :\n\t calcul de A*" << endl;
-  //~ out << "-bar ou -complement Input :\n\t calcul du complément" << endl;
-  //~ out << "-cap ou -intersection Input1 Input2 :\n\t calcul de l'intersection par la loi de De Morgan" << endl;
-  //~ out << "-prod ou -produit Input1 Input2 :\n\t calcul de l'intersection par construction de l'automate produit" << endl;
-//~ /*
-  //~ out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
-//~ */
-  //~ out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant à Input" << endl;
-  //~ out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
-//~ 
-  //~ out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
-  //~ out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
-//~ 
-  //~ out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;
-  //~ out << "Exemple '" << s << " -minimisation test.jff -output min -j'" << endl;
-//~ }
-//~ 
 //~ 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool ToGraph(sAutoNDE& at, string path){
+  //TODO définir cette fonction
+
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool ToJflap(sAutoNDE& at, string path){
+  //TODO définir cette fonction
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// fonction outil : on garde x, et on "ajoute" trans et epsilon de y
+// en renommant ses états, id est en décallant les indices des états de y
+// de x.nb_etats
+sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
+  //TODO définir cette fonction
+  assert(x.nb_symbs == y.nb_symbs);
+  sAutoNDE r;
+
+  return r;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
+  //TODO définir cette fonction
+
+  assert(x.nb_symbs == y.nb_symbs);
+  sAutoNDE r = Append(x, y);
+
+  return r;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
+  //TODO définir cette fonction
+
+  assert(x.nb_symbs == y.nb_symbs);
+  sAutoNDE r = Append(x, y);
+
+  return r;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+sAutoNDE Complement(const sAutoNDE& x){
+  //TODO définir cette fonction
+
+  return x;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+sAutoNDE Kleene(const sAutoNDE& x){
+  //TODO définir cette fonction
+
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Intersection avec la loi de De Morgan
+sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
+  //TODO définir cette fonction
+
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Intersection avec l'automate produit
+sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
+  //TODO définir cette fonction
+
+  sAutoNDE r;
+
+  return r;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+sAutoNDE Minimize(const sAutoNDE& at){
+  //TODO définir cette fonction
+
+  assert(EstDeterministe(at));
+  sAutoNDE r;
+
+  return r;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void Help(ostream& out, char *s){
+  out << "Utilisation du programme " << s << " :" << endl ;
+  out << "-acc ou -accept Input Word:\n\t détermine si le mot Word est accepté" << endl;
+  out << "-det ou -determinize Input :\n\t déterminise Input" << endl;
+  out << "-cup ou -union Input1 Input2 :\n\t calcule l'union" << endl;
+  out << "-cat ou -concat Input1 Input2 :\n\t calcul la concaténation" << endl;
+  out << "-star ou -kleene Input :\n\t calcul de A*" << endl;
+  out << "-bar ou -complement Input :\n\t calcul du complément" << endl;
+  out << "-cap ou -intersection Input1 Input2 :\n\t calcul de l'intersection par la loi de De Morgan" << endl;
+  out << "-prod ou -produit Input1 Input2 :\n\t calcul de l'intersection par construction de l'automate produit" << endl;
+/*
+  out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
+*/
+  out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant à Input" << endl;
+  out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
+
+  out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
+  out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
+
+  out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;
+  out << "Exemple '" << s << " -minimisation test.jff -output min -j'" << endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 
 int main(int argc, char* argv[] ){
-	int nbAutomate = 19;
-	string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
-	sAutoNDE automateTXT, automateJFF;
-	int i = 5;
+	if(argc == 2 && strcmp(argv[1], "test") == 0)
+		test();
+		return EXIT_SUCCESS;
 	
-	cout << endl << "###" << endl << "### " << listeAutomate[i] << endl << "###" << endl << endl;
+	if(argc < 3){
+		Help(cout, argv[0]);
+		return EXIT_FAILURE;
+	}
 	
-	FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
-	FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
-	
-	cout << "TXT : " << automateTXT << endl << "JFF : " << automateJFF;
-	
-	cout << "Deterministe : " << EstDeterministe(automateTXT) << endl;
-	
-	cout << "Delta: " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-	
-	cout << "aba accepte : " << Accept(automateTXT, "aba") << endl;
-	cout << "aaa accepte : " << Accept(automateTXT, "aaa") << endl;
-	cout << "bbb accepte : " << Accept(automateTXT, "bbb") << endl;
-	cout << "abb accepte : " << Accept(automateTXT, "abb") << endl;
-	
-	etatset_t tab;
-    tab.insert(1);
-    tab.insert(0);
-    Fermeture(automateTXT, tab);
-	cout << automateTXT;
-	
-  //~ if(argc < 3){
-    //~ Help(cout, argv[0]);
-    //~ return EXIT_FAILURE;
-  //~ }
-  //~
-  //~ int pos;
-  //~ int act=-1;                 // pos et act pour savoir quelle action effectuer
-  //~ int nb_files = 0;           // nombre de fichiers en entrée
-  //~ string str, in1, in2, out, acc, expr;
-  //~ // chaines pour (resp.) tampon; fichier d'entrée Input1; fichier d'entrée Input2;
-  //~ // fichier de sortie et chaine dont l'acceptation est à tester
-  //~ bool toFile=false, graphMode=false, jflapMode=false;     // sortie STDOUT ou fichier ? Si fichier, format graphviz ? Jflap ?
-//~
-  //~ // options acceptées
-  //~ const size_t NBOPT = 14;
-  //~ string aLN[] = {"accept", "determinize", "union", "concat", "kleene", "complement", "intersection", "produit", "expressionrationnelle2automate", "minimisation", "no_operation", "output", "graph", "jflap"};
-  //~ string aSN[] = {"acc", "det", "cup", "cat", "star", "bar", "cap", "prod", "expr2aut", "min", "nop", "o", "g", "j"};
-  //~
-  //~ // on essaie de "parser" chaque option de la ligne de commande
-  //~ for(int i=1; i<argc; ++i){
-    //~ if (DEBUG) cerr << "argv[" << i << "] = '" << argv[i] << "'" << endl;
-    //~ str = argv[i];
-    //~ pos = -1;
-    //~ string* pL = find(aLN, aLN+NBOPT, str.substr(1));
-    //~ string* pS = find(aSN, aSN+NBOPT, str.substr(1));
-    //~
-    //~ if(pL!=aLN+NBOPT)
-      //~ pos = pL - aLN;
-    //~ if(pS!=aSN+NBOPT)
-      //~ pos = pS - aSN;
-      //~
-    //~ if(pos != -1){
-      //~ // (pos != -1) <=> on a trouvé une option longue ou courte
-      //~ if (DEBUG) cerr << "Key found (" << pos << ") : " << str << endl;
-      //~ switch (pos) {
-        //~ case 0: //acc
-          //~ in1 = argv[++i];
-          //~ acc = argv[++i];
-	  //~ nb_files = 1;
-          //~ break;
-        //~ case 1: //det
-          //~ in1 = argv[++i];
-	  //~ nb_files = 1;
-          //~ break;
-        //~ case 2: //cup
-          //~ in1 = argv[++i];
-          //~ in2 = argv[++i];
-	  //~ nb_files = 2;
-          //~ break;
-        //~ case 3: //cat
-          //~ in1 = argv[++i];
-          //~ in2 = argv[++i];
-	  //~ nb_files = 2;
-          //~ break;
-        //~ case 4: //star
-          //~ in1 = argv[++i];
-	  //~ nb_files = 1;
-          //~ break;
-        //~ case 5: //bar
-          //~ in1 = argv[++i];
-	  //~ nb_files = 1;
-          //~ break;
-        //~ case 6: //cap
-          //~ in1 = argv[++i];
-          //~ in2 = argv[++i];
-	  //~ nb_files = 2;
-          //~ break;
-        //~ case 7: //prod
-          //~ in1 = argv[++i];
-          //~ in2 = argv[++i];
-	  //~ nb_files = 2;
-          //~ break;
-        //~ case 8: //expr2aut
-          //~ expr = argv[++i];
-	  //~ nb_files = 0;
-          //~ break;
-        //~ case 9: //min
-          //~ in1 = argv[++i];
-	  //~ nb_files = 1;
-          //~ break;
-        //~ case 10: //nop
-          //~ in1 = argv[++i];
-	  //~ nb_files = 1;
-          //~ break;
-        //~ case 11: //o
-          //~ toFile = true;
-          //~ out = argv[++i];
-          //~ break;
-        //~ case 12: //g
-          //~ graphMode = true;
-          //~ break;
-        //~ case 13: //j
-          //~ jflapMode = true;
-          //~ break;
-        //~ default:
-          //~ return EXIT_FAILURE;
-        //~ }
-    //~ }
-    //~ else{
-      //~ cerr << "Option inconnue "<< str << endl;
-      //~ return EXIT_FAILURE;
-    //~ }
-    //~
-    //~ if(pos<11){
-      //~ if(act > -1){
-        //~ cerr << "Plusieurs actions spécififées"<< endl;
-        //~ return EXIT_FAILURE;
-      //~ }
-      //~ else
-        //~ act = pos;
-    //~ }
-  //~ }
-  //~
-  //~ if (act == -1){
-    //~ cerr << "Pas d'action spécififée"<< endl;
-    //~ return EXIT_FAILURE;
-  //~ }
-//~
-//~ /* Les options sont OK, on va essayer de lire le(s) automate(s) at1 (et at2)
-//~ et effectuer l'action spécifiée. Atr stockera le résultat*/
-//~
-  //~ sAutoNDE at1, at2, atr;
-  //~
-  //~ if ((nb_files == 1 or nb_files == 2) and !FromFile(at1, in1)){
-    //~ cerr << "Erreur de lecture " << in1 << endl;
-    //~ return EXIT_FAILURE;
-  //~ }
-  //~ if (nb_files ==2 and !FromFile(at2, in2)){
-    //~ cerr << "Erreur de lecture " << in2 << endl;
-    //~ return EXIT_FAILURE;
-  //~ }
-  //~
-  //~ switch(act) {
-  //~ case 0: //acc
-    //~ cout << "'" << acc << "' est accepté: " << Accept(at1, acc) << endl;
-    //~ atr = at1;
-    //~ break;
-  //~ case 1: //det
-    //~ atr = Determinize(at1);
-    //~ break;
-  //~ case 2: //cup
-    //~ atr =  Union(at1, at2);
-    //~ break;
-  //~ case 3: //cat
-    //~ atr =  Concat(at1, at2);
-    //~ break;
-  //~ case 4: //star
-    //~ atr =  Kleene(at1);
-    //~ break;
-  //~ case 5: //bar
-    //~ atr =  Complement(at1);
-    //~ break;
-  //~ case 6: //cap
-    //~ atr =  Intersection(at1, at2);
-    //~ break;
-  //~ case 7: //prod
-    //~ atr =  Produit(at1, at2);
-    //~ break;
-  //~ case 8: //expr2aut
-//~ /*
-    //~ atr =  ExpressionRationnelle2Automate(expr);
-//~ */
-    //~ break;
-  //~ case 9: //minimisation
-    //~ atr =  Minimize(at1);
-    //~ break;
-  //~ case 10: //nop
-    //~ atr = at1;
-    //~ break;
-  //~ default:
-    //~ return EXIT_FAILURE;
-  //~ }
-//~
-  //~ // on affiche le résultat ou on l'écrit dans un fichier
-  //~ if(!toFile)
-    //~ cout << atr;
-  //~ else{
-    //~ if(graphMode){
-      //~ ToGraph(atr, out + ".gv");
-      //~ system(("dot -Tpng " + out + ".gv -o " + out + ".png").c_str());
-    //~ }
-    //~ if(jflapMode){
-      //~ ToJflap(atr, out + ".jff");
-    //~ }
-    //~ ofstream f((out + ".txt").c_str(), ios::trunc);
-    //~ if(f.fail())
-      //~ return EXIT_FAILURE;
-    //~ f << atr;
-  //~ }
+	int pos;
+	int act=-1;                 // pos et act pour savoir quelle action effectuer
+	int nb_files = 0;           // nombre de fichiers en entrée
+	string str, in1, in2, out, acc, expr;
+	// chaines pour (resp.) tampon; fichier d'entrée Input1; fichier d'entrée Input2;
+	// fichier de sortie et chaine dont l'acceptation est à tester 
+	bool toFile=false, graphMode=false, jflapMode=false;     // sortie STDOUT ou fichier ? Si fichier, format graphviz ? Jflap ?
 
-  return EXIT_SUCCESS;
+	// options acceptées
+	const size_t NBOPT = 14;
+	string aLN[] = {"accept", "determinize", "union", "concat", "kleene", "complement", "intersection", "produit", "expressionrationnelle2automate", "minimisation", "no_operation", "output", "graph", "jflap"};
+	string aSN[] = {"acc", "det", "cup", "cat", "star", "bar", "cap", "prod", "expr2aut", "min", "nop", "o", "g", "j"};
+
+	// on essaie de "parser" chaque option de la ligne de commande
+	for(int i=1; i<argc; ++i){
+		if (DEBUG) cerr << "argv[" << i << "] = '" << argv[i] << "'" << endl;
+		str = argv[i];
+		pos = -1;
+		string* pL = find(aLN, aLN+NBOPT, str.substr(1));
+		string* pS = find(aSN, aSN+NBOPT, str.substr(1));
+
+		if(pL!=aLN+NBOPT)
+			pos = pL - aLN;
+		if(pS!=aSN+NBOPT)
+			pos = pS - aSN;   
+
+		if(pos != -1){
+			// (pos != -1) <=> on a trouvé une option longue ou courte
+			if (DEBUG) cerr << "Key found (" << pos << ") : " << str << endl;
+			switch (pos) {
+				case 0: //acc
+					in1 = argv[++i];
+					acc = argv[++i];
+					nb_files = 1;
+					break;
+				case 1: //det
+					in1 = argv[++i];
+					nb_files = 1;
+					break;
+				case 2: //cup
+					in1 = argv[++i];
+					in2 = argv[++i];
+					nb_files = 2;
+					break;
+				case 3: //cat
+					in1 = argv[++i];
+					in2 = argv[++i];
+					nb_files = 2;
+					break;
+				case 4: //star
+					in1 = argv[++i];
+					nb_files = 1;
+					break;
+				case 5: //bar
+					in1 = argv[++i];
+					nb_files = 1;
+					break;
+				case 6: //cap
+					in1 = argv[++i];
+					in2 = argv[++i];
+					nb_files = 2;
+					break;
+				case 7: //prod
+					in1 = argv[++i];
+					in2 = argv[++i];
+					nb_files = 2;
+					break;
+				case 8: //expr2aut
+					expr = argv[++i];
+					nb_files = 0;
+					break;
+				case 9: //min
+					in1 = argv[++i];
+					nb_files = 1;
+					break;
+				case 10: //nop
+					in1 = argv[++i];
+					nb_files = 1;
+					break;          
+				case 11: //o
+					toFile = true;
+					out = argv[++i];
+					break;
+				case 12: //g
+					graphMode = true;
+					break;
+				case 13: //j
+					jflapMode = true;
+					break;
+				default:
+					return EXIT_FAILURE;
+			}
+		}
+		else{
+			cerr << "Option inconnue "<< str << endl;
+			return EXIT_FAILURE;
+		}
+
+		if(pos<11){
+			if(act > -1){
+				cerr << "Plusieurs actions spécififées"<< endl;
+				return EXIT_FAILURE;
+			}
+			else
+				act = pos;
+		}    
+	}
+
+	if (act == -1){
+		cerr << "Pas d'action spécififée"<< endl;
+		return EXIT_FAILURE;
+	}  
+
+	/* Les options sont OK, on va essayer de lire le(s) automate(s) at1 (et at2)
+	et effectuer l'action spécifiée. Atr stockera le résultat*/
+
+	sAutoNDE at1, at2, atr;
+
+	if ((nb_files == 1 or nb_files == 2) and !FromFile(at1, in1)){
+	cerr << "Erreur de lecture " << in1 << endl;
+	return EXIT_FAILURE;
+	}  
+	if (nb_files ==2 and !FromFile(at2, in2)){
+	cerr << "Erreur de lecture " << in2 << endl;
+	return EXIT_FAILURE;
+	}  
+
+	switch(act) {
+		case 0: //acc
+			cout << "'" << acc << "' est accepté: " << Accept(at1, acc) << endl;
+			atr = at1;
+			break;
+		case 1: //det
+			atr = Determinize(at1);
+			break;
+		case 2: //cup
+			atr =  Union(at1, at2); 
+			break;
+		case 3: //cat
+			atr =  Concat(at1, at2); 
+			break;
+		case 4: //star
+			atr =  Kleene(at1);
+			break;
+		case 5: //bar
+			atr =  Complement(at1);
+			break;
+		case 6: //cap
+			atr =  Intersection(at1, at2);
+			break;
+		case 7: //prod
+			atr =  Produit(at1, at2);
+			break;
+		case 8: //expr2aut
+		/*
+		atr =  ExpressionRationnelle2Automate(expr);
+		*/
+		break;
+			case 9: //minimisation
+			atr =  Minimize(at1);
+		break;
+			case 10: //nop
+			atr = at1;
+			break;
+		default:
+			return EXIT_FAILURE;
+	}
+
+	// on affiche le résultat ou on l'écrit dans un fichier
+	if(!toFile)
+		cout << atr;
+	else{
+		if(graphMode){
+			ToGraph(atr, out + ".gv");
+			system(("dot -Tpng " + out + ".gv -o " + out + ".png").c_str());
+		}
+		if(jflapMode){
+			ToJflap(atr, out + ".jff");
+		}
+		ofstream f((out + ".txt").c_str(), ios::trunc); 
+		if(f.fail())
+			return EXIT_FAILURE;
+		f << atr;    
+	}
+
+	return EXIT_SUCCESS;
 }
 
 // Utile pour afficher une liste d'état
@@ -931,4 +907,46 @@ string toStringEtatset(etatset_t e){
     }
     str += "}";
     return str;
+}
+
+void test(){
+	int nbAutomate = 19;
+	string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
+	
+	for (int i = 0; i < nbAutomate; i++){
+		sAutoNDE automateTXT, automateJFF;
+		
+		FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
+		system("clear");
+		cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
+		cout << "==> TXT" << automateTXT << endl;
+		
+		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
+		cout << "==> JFF" << automateJFF << endl;
+		
+		etatset_t cf;
+		cf.insert(1);
+		cf.insert(0);
+		cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
+		
+		cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
+		
+		cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
+		
+		cout << "==> Accepte" << endl;
+		cout << "\taba : " << Accept(automateTXT, "aba") << endl;
+		cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
+		cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
+		cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
+		
+		etatset_t f;
+		Fermeture(automateTXT, f);
+		cout << "==> Fermeture : " << f << endl;
+		
+		sAutoNDE automateDeterminise = Determinize(automateTXT);
+		cout << "==> Determinise : " << EstDeterministe(automateDeterminise);
+		cout << "==>  : " << automateDeterminise;
+		
+		while(getchar() != '\n');
+	}
 }
