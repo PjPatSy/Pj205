@@ -313,6 +313,7 @@ bool EstDeterministe(const sAutoNDE& at){
             // Si on a plus de 2 états pour un état de départ et une transition -> non déterministe
             // Si on a aucun états pour d'arrivé pour un état de départ et un carctère
             if(at.trans[i][j].size() != 1){
+				cout << at.trans[i][j] << endl;
                 return false;
             }
         }
@@ -407,8 +408,9 @@ sAutoNDE Determinize(const sAutoNDE& at){
                                         // (Mauvaise optimisation de la mémoire, mais plus simple si les automates ne sont pas trop grands)
                                         // Cela permet d'économiser du temps de calcul (Resize dynamique dans se cas est plus long)
         for(size_t i=0; i < rAutoD.trans.size(); i++){
-            rAutoD.trans[i].resize(nbEtatMax);
+            rAutoD.trans[i].resize(at.nb_symbs);
         }
+
           //////////////////////////////////////////////////////////////////////////////////////////
          ////                             Les epsilon Fermeture                                ////
         ////////////////////////////////////////////////////////////////////////////////////////// 
@@ -464,7 +466,7 @@ sAutoNDE Determinize(const sAutoNDE& at){
                     str += toStringEtatset(res.first->first);
                     str += "\n";
                     if(res.second){ // Si on a un nouvel ensemble
-                        tmpMap2.insert(pair<etatset_t, etat_t>(deltaRes, 0));
+                        tmpMap2.insert(pair<etatset_t, etat_t>(deltaRes, res.first->second));
                         if(ContientFinal(at, deltaRes)){
                             rAutoD.finaux.insert(res.first->second);
                         }
@@ -684,9 +686,10 @@ void Help(ostream& out, char *s){
 
 
 int main(int argc, char* argv[] ){
-	if(argc == 2 && strcmp(argv[1], "test") == 0)
+	if(argc == 2 && strcmp(argv[1], "test") == 0){
 		test();
 		return EXIT_SUCCESS;
+	}
 	
 	if(argc < 3){
 		Help(cout, argv[0]);
@@ -919,37 +922,36 @@ void test(){
 		FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
 		system("clear");
 		cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
-		cout << "==> TXT" << automateTXT << endl;
+		//~ cout << "==> TXT" << automateTXT << endl;
 		
-		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
-		cout << "==> JFF" << automateJFF << endl;
+		//~ FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
+		//~ cout << "==> JFF" << automateJFF << endl;
+		//~ 
+		//~ etatset_t cf;
+		//~ cf.insert(1);
+		//~ cf.insert(0);
+		//~ cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
+		//~ 
+		//~ cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
+		//~ 
+		//~ cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
+		//~ 
+		//~ cout << "==> Accepte" << endl;
+		//~ cout << "\taba : " << Accept(automateTXT, "aba") << endl;
+		//~ cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
+		//~ cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
+		//~ cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
 		
-		etatset_t cf;
-		cf.insert(1);
-		cf.insert(0);
-		cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
-		
-		cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
-		
-		cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-		
-		cout << "==> Accepte" << endl;
-		cout << "\taba : " << Accept(automateTXT, "aba") << endl;
-		cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
-		cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
-		cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
-		
-		etatset_t f;
-		f.insert(1);
-		f.insert(2);
-		cout << "==> Fermeture " << f <<  " : ";
-		Fermeture(automateTXT, f);
-		cout << f <<  endl;
+		//~ etatset_t f;
+		//~ f.insert(1);
+		//~ f.insert(2);
+		//~ cout << "==> Fermeture " << f <<  " : ";
+		//~ Fermeture(automateTXT, f);
+		//~ cout << f <<  endl;
 		
 		sAutoNDE automateDeterminise = Determinize(automateTXT);
-		cout << "==> Determinise : " << EstDeterministe(automateDeterminise);
-		cout << "==>  : " << automateDeterminise;
-		
+		cout << "==> Determinise : " << EstDeterministe(automateDeterminise) << endl;
+		cout << automateDeterminise << endl;
 		while(getchar() != '\n');
 	}
 }
