@@ -174,7 +174,7 @@ bool FromFileTxt(sAutoNDE& at, string path){
 			else{
 			    at.trans[s][a-ASCII_A].insert(t);
 				cerr << "s=" << s<< ", a=" << a-ASCII_A << ", t=" << t << endl;
-			} 
+			}
 		}
 		myfile.close();
 		return true;
@@ -232,13 +232,13 @@ bool FromFileJff(sAutoNDE& at, string path){
 					if(tmpEl->GetText() != NULL){
 						if(at.nb_symbs < tmpEl->GetText()[0] - ASCII_A + 1){ // Cas ou on a 'b' et pas 'a', il faut compter 'a'
 							at.nb_symbs = (tmpEl->GetText()[0] - ASCII_A) + 1;
-						}						
+						}
 					}
 				}
 			}
 			elemTrans = elemTrans->NextSiblingElement();
 		}
-		
+
 		// Initialisation des taille des matrices
 		at.epsilon.resize(at.nb_etats);
 		at.trans.resize(at.nb_etats);
@@ -313,7 +313,6 @@ bool EstDeterministe(const sAutoNDE& at){
             // Si on a plus de 2 états pour un état de départ et une transition -> non déterministe
             // Si on a aucun états pour d'arrivé pour un état de départ et un carctère
             if(at.trans[i][j].size() != 1){
-				cout << at.trans[i][j] << endl;
                 return false;
             }
         }
@@ -404,16 +403,10 @@ sAutoNDE Determinize(const sAutoNDE& at){
         map_t corespEtat; // Fait la correspondance entre le numéro d'état dans rAuto, et sa les états qu'il représente dans at
         rAutoD.nb_symbs = at.nb_symbs;
         rAutoD.nb_finaux = 0;
-        rAutoD.trans.resize(nbEtatMax); // Alloue le maximum de transitions possibles
-                                        // (Mauvaise optimisation de la mémoire, mais plus simple si les automates ne sont pas trop grands)
-                                        // Cela permet d'économiser du temps de calcul (Resize dynamique dans se cas est plus long)
-        for(size_t i=0; i < rAutoD.trans.size(); i++){
-            rAutoD.trans[i].resize(at.nb_symbs);
-        }
 
           //////////////////////////////////////////////////////////////////////////////////////////
          ////                             Les epsilon Fermeture                                ////
-        ////////////////////////////////////////////////////////////////////////////////////////// 
+        //////////////////////////////////////////////////////////////////////////////////////////
         int offset = 0; // Utile quand 2 états ont la même femeture, on ne doit rajouter qu'un seul état dans l'automate final
         cout << "Epsilon-fermeture:" << endl;
         for(size_t i=0; (i+offset) < at.nb_etats; i++){
@@ -444,7 +437,7 @@ sAutoNDE Determinize(const sAutoNDE& at){
 
           //////////////////////////////////////////////////////////////////////////////////////////
          ////                             Delta                                                ////
-        ////////////////////////////////////////////////////////////////////////////////////////// 
+        //////////////////////////////////////////////////////////////////////////////////////////
         map_t tmpMap1 = corespEtat; // Map temporaire permettant de se déplacer d'enregistrer les états dès qu'on se déplace dans l'automate
         map_t tmpMap2;
         string str = ""; // Contiendra des infos sur les transision, sera affichée à la fin de la fonction
@@ -457,7 +450,18 @@ sAutoNDE Determinize(const sAutoNDE& at){
                     res = corespEtat.insert(pair<etatset_t, etat_t>(deltaRes, corespEtat.size()));
                     /* On enregistre la transition (itM->second : numéro de l'état d'où on vient
                        i : le caractère de transition, res.first->second : l'état ou l'on va) */
-                    rAutoD.trans[itM->second][i].insert(res.first->second);
+                    // Redimention dynamique de la liste des transitions
+                    if(itM->second >= rAutoD.trans.size()){
+                        int taillePre = rAutoD.trans.size();
+                        rAutoD.trans.resize(itM->second+1);
+                        for(int j=taillePre; j < rAutoD.trans.size(); j++){
+                            rAutoD.trans[j].resize(at.nb_symbs); // Laisse la place pour tout les symboles
+                        }
+                        rAutoD.trans[itM->second][i].insert(res.first->second);
+                    }
+                    else{
+                        rAutoD.trans[itM->second][i].insert(res.first->second);
+                    }
                     str += " delta(";
                     str += toStringEtatset(itM->first);
                     str += ", ";
@@ -554,7 +558,7 @@ ostream& operator<<(ostream& out, const sAutoNDE& at){
 
   return out;
 }
-//~ 
+//~
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -686,22 +690,23 @@ void Help(ostream& out, char *s){
 
 
 int main(int argc, char* argv[] ){
+
 	if(argc == 2 && strcmp(argv[1], "test") == 0){
-		test();
+      test();
 		return EXIT_SUCCESS;
 	}
-	
+
 	if(argc < 3){
 		Help(cout, argv[0]);
 		return EXIT_FAILURE;
 	}
-	
+
 	int pos;
 	int act=-1;                 // pos et act pour savoir quelle action effectuer
 	int nb_files = 0;           // nombre de fichiers en entrée
 	string str, in1, in2, out, acc, expr;
 	// chaines pour (resp.) tampon; fichier d'entrée Input1; fichier d'entrée Input2;
-	// fichier de sortie et chaine dont l'acceptation est à tester 
+	// fichier de sortie et chaine dont l'acceptation est à tester
 	bool toFile=false, graphMode=false, jflapMode=false;     // sortie STDOUT ou fichier ? Si fichier, format graphviz ? Jflap ?
 
 	// options acceptées
@@ -720,7 +725,7 @@ int main(int argc, char* argv[] ){
 		if(pL!=aLN+NBOPT)
 			pos = pL - aLN;
 		if(pS!=aSN+NBOPT)
-			pos = pS - aSN;   
+			pos = pS - aSN;
 
 		if(pos != -1){
 			// (pos != -1) <=> on a trouvé une option longue ou courte
@@ -774,7 +779,7 @@ int main(int argc, char* argv[] ){
 				case 10: //nop
 					in1 = argv[++i];
 					nb_files = 1;
-					break;          
+					break;
 				case 11: //o
 					toFile = true;
 					out = argv[++i];
@@ -801,13 +806,13 @@ int main(int argc, char* argv[] ){
 			}
 			else
 				act = pos;
-		}    
+		}
 	}
 
 	if (act == -1){
 		cerr << "Pas d'action spécififée"<< endl;
 		return EXIT_FAILURE;
-	}  
+	}
 
 	/* Les options sont OK, on va essayer de lire le(s) automate(s) at1 (et at2)
 	et effectuer l'action spécifiée. Atr stockera le résultat*/
@@ -817,11 +822,11 @@ int main(int argc, char* argv[] ){
 	if ((nb_files == 1 or nb_files == 2) and !FromFile(at1, in1)){
 	cerr << "Erreur de lecture " << in1 << endl;
 	return EXIT_FAILURE;
-	}  
+	}
 	if (nb_files ==2 and !FromFile(at2, in2)){
 	cerr << "Erreur de lecture " << in2 << endl;
 	return EXIT_FAILURE;
-	}  
+	}
 
 	switch(act) {
 		case 0: //acc
@@ -832,10 +837,10 @@ int main(int argc, char* argv[] ){
 			atr = Determinize(at1);
 			break;
 		case 2: //cup
-			atr =  Union(at1, at2); 
+			atr =  Union(at1, at2);
 			break;
 		case 3: //cat
-			atr =  Concat(at1, at2); 
+			atr =  Concat(at1, at2);
 			break;
 		case 4: //star
 			atr =  Kleene(at1);
@@ -875,10 +880,10 @@ int main(int argc, char* argv[] ){
 		if(jflapMode){
 			ToJflap(atr, out + ".jff");
 		}
-		ofstream f((out + ".txt").c_str(), ios::trunc); 
+		ofstream f((out + ".txt").c_str(), ios::trunc);
 		if(f.fail())
 			return EXIT_FAILURE;
-		f << atr;    
+		f << atr;
 	}
 
 	return EXIT_SUCCESS;
@@ -915,42 +920,42 @@ string toStringEtatset(etatset_t e){
 void test(){
 	int nbAutomate = 19;
 	string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
-	
+
 	for (int i = 0; i < nbAutomate; i++){
 		sAutoNDE automateTXT, automateJFF;
-		
+
 		FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
 		system("clear");
 		cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
 		//~ cout << "==> TXT" << automateTXT << endl;
-		
+
 		//~ FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
 		//~ cout << "==> JFF" << automateJFF << endl;
-		//~ 
+		//~
 		//~ etatset_t cf;
 		//~ cf.insert(1);
 		//~ cf.insert(0);
 		//~ cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
-		//~ 
+		//~
 		//~ cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
-		//~ 
+		//~
 		//~ cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-		//~ 
+		//~
 		//~ cout << "==> Accepte" << endl;
 		//~ cout << "\taba : " << Accept(automateTXT, "aba") << endl;
 		//~ cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
 		//~ cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
 		//~ cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
-		
+
 		//~ etatset_t f;
 		//~ f.insert(1);
 		//~ f.insert(2);
 		//~ cout << "==> Fermeture " << f <<  " : ";
 		//~ Fermeture(automateTXT, f);
 		//~ cout << f <<  endl;
-		
+
 		sAutoNDE automateDeterminise = Determinize(automateTXT);
-		cout << "==> Determinise : " << EstDeterministe(automateDeterminise) << endl;
+		cout << "==> Determinise : " << ((EstDeterministe(automateDeterminise))? "Oui" : "Non")<< endl;
 		cout << automateDeterminise << endl;
 		while(getchar() != '\n');
 	}
