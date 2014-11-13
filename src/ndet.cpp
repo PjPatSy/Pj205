@@ -927,36 +927,36 @@ void test(){
 		FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
 		system("clear");
 		cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
-		//~ cout << "==> TXT" << automateTXT << endl;
+		cout << "==> TXT" << automateTXT << endl;
 
-		//~ FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
-		//~ cout << "==> JFF" << automateJFF << endl;
-		//~
-		//~ etatset_t cf;
-		//~ cf.insert(1);
-		//~ cf.insert(0);
-		//~ cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
-		//~
-		//~ cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
-		//~
-		//~ cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-		//~
-		//~ cout << "==> Accepte" << endl;
-		//~ cout << "\taba : " << Accept(automateTXT, "aba") << endl;
-		//~ cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
-		//~ cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
-		//~ cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
+		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
+		cout << "==> JFF" << automateJFF << endl;
+		
+		etatset_t cf;
+		cf.insert(1);
+		cf.insert(0);
+		cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
+		
+		cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
+		
+		cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
+		
+		cout << "==> Accepte" << endl;
+		cout << "\taba : " << Accept(automateTXT, "aba") << endl;
+		cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
+		cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
+		cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
 
-		//~ etatset_t f;
-		//~ f.insert(1);
-		//~ f.insert(2);
-		//~ cout << "==> Fermeture " << f <<  " : ";
-		//~ Fermeture(automateTXT, f);
-		//~ cout << f <<  endl;
+		etatset_t f;
+		f.insert(1);
+		f.insert(2);
+		cout << "==> Fermeture " << f <<  " : ";
+		Fermeture(automateTXT, f);
+		cout << f <<  endl;
 
 		sAutoNDE automateDeterminise = Determinize(automateTXT);
 		cout << "==> Determinise : " << ((EstDeterministe(automateDeterminise))? "Oui" : "Non")<< endl;
-		cout << automateDeterminise << endl;
+
 		while(getchar() != '\n');
 	}
 }
