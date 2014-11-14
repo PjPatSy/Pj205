@@ -14,6 +14,7 @@
 #include <cmath>
 
 #include "tinyxml/tinyxml.h"
+#include "ndet.hpp"
 
 using namespace std;
 
