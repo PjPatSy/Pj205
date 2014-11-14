@@ -399,7 +399,6 @@ bool Accept(const sAutoNDE& at, string str){
 sAutoNDE Determinize(const sAutoNDE& at){
     sAutoNDE rAutoD; // Automate déterminisé
     if(!EstDeterministe(at)){
-        const int nbEtatMax = (int)pow(2, at.nb_etats); // Nombre maximum d'états possibles en déterminisant (2^n) avec n le nombre d'état de at
         map_t corespEtat; // Fait la correspondance entre le numéro d'état dans rAuto, et sa les états qu'il représente dans at
         rAutoD.nb_symbs = at.nb_symbs;
         rAutoD.nb_finaux = 0;
@@ -692,7 +691,7 @@ void Help(ostream& out, char *s){
 int main(int argc, char* argv[] ){
 
 	if(argc == 2 && strcmp(argv[1], "test") == 0){
-      test();
+        test();
 		return EXIT_SUCCESS;
 	}
 
@@ -930,17 +929,20 @@ void test(){
 		cout << "==> TXT" << automateTXT << endl;
 
 		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
-		cout << "==> JFF" << automateJFF << endl;
-		
+        cout << "==> JFF" << automateJFF << endl;
+
+
+
 		etatset_t cf;
 		cf.insert(1);
 		cf.insert(0);
+        cout << automateTXT.nb_etats << endl;
 		cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
-		
-		cout << "==> Deterministe : " << EstDeterministe(automateTXT) << endl;
-		
+
+		cout << "==> Deterministe : " << ((EstDeterministe(automateTXT))? "Oui" : "Non") << endl;
+
 		cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-		
+
 		cout << "==> Accepte" << endl;
 		cout << "\taba : " << Accept(automateTXT, "aba") << endl;
 		cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
@@ -953,10 +955,11 @@ void test(){
 		cout << "==> Fermeture " << f <<  " : ";
 		Fermeture(automateTXT, f);
 		cout << f <<  endl;
-
+        cout << "==> Deterministation : " << endl;
 		sAutoNDE automateDeterminise = Determinize(automateTXT);
 		cout << "==> Determinise : " << ((EstDeterministe(automateDeterminise))? "Oui" : "Non")<< endl;
 
+        cout << endl << "Appuyez sur entrer pour continuer..." << endl;
 		while(getchar() != '\n');
 	}
 }
