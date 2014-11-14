@@ -1,5 +1,5 @@
-#ifndef FONCTIONS_H_INCLUDED
-#define FONCTIONS_H_INCLUDED
+#ifndef NDET_H
+#define NDET_H
 
 #include <iostream>
 #include <fstream>
@@ -32,42 +32,47 @@ typedef vector< etatset_t >               epsilon_t;
 typedef map< etatset_t, etat_t >          map_t;
 
 struct sAutoNDE{
-	// caractÃ©ristiques
+	// caractéristiques
 	size_t nb_etats;
 	size_t nb_symbs;
 	size_t nb_finaux;
 
 	etat_t initial;
-	// Ã©tat initial
+	// état initial
 
 	etatset_t finaux;
-	// Ã©tats finaux : finaux_t peut Ãªtre un int*, un tableau dynamique comme vector<int>
-	// ou une autre structure de donnÃ©e de votre choix.
+	// états finaux : finaux_t peut être un int*, un tableau dynamique comme vector<int>
+	// ou une autre structure de donnée de votre choix.
 
 	trans_t trans;
-	// matrice de transition : trans_t peut Ãªtre un int***, une structure dynamique 3D comme vector< vector< set<int> > >
-	// ou une autre structure de donnÃ©e de votre choix.
+	// matrice de transition : trans_t peut être un int***, une structure dynamique 3D comme vector< vector< set<int> > >
+	// ou une autre structure de donnée de votre choix.
 
 	epsilon_t epsilon;
-	// transitions spontanÃ©es : epsilon_t peut Ãªtre un int**, une structure dynamique 2D comme vector< set<int> >
-	// ou une autre structure de donnÃ©e de votre choix.
+	// transitions spontanées : epsilon_t peut être un int**, une structure dynamique 2D comme vector< set<int> >
+	// ou une autre structure de donnée de votre choix.
 };
 
-////////////////////////////////////////////////////////////////////////////////
 
+// Parseurs
 bool FromFileTxt(sAutoNDE& at, string path);
 bool FromFileJff(sAutoNDE& at, string path);
 bool FromFile(sAutoNDE& at, string path);
-bool ContientFinal(const sAutoNDE& at,const etatset_t& e);
 
+// Manipulation d'automate
+bool ContientFinal(const sAutoNDE& at,const etatset_t& e);
 bool EstDeterministe(const sAutoNDE& at);
 void Fermeture(const sAutoNDE& at, etatset_t& e);
 etatset_t Delta(const sAutoNDE& at, const etatset_t& e, symb_t c);
 bool Accept(const sAutoNDE& at, string str);
 sAutoNDE Determinize(const sAutoNDE& at);
+
+// Affichage
 ostream& operator<<(ostream& out, const sAutoNDE& at);
 bool ToGraph(sAutoNDE& at, string path);
 bool ToJflap(sAutoNDE& at, string path);
+ostream& operator<<(ostream& out, etatset_t e);
+string toStringEtatset(etatset_t e);
 
 sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y);
@@ -77,12 +82,5 @@ sAutoNDE Kleene(const sAutoNDE& x);
 sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Minimize(const sAutoNDE& at);
-void Help(ostream& out, char *s);
-
-// Utile pour afficher une liste d'Ã©tat
-ostream& operator<<(ostream& out, etatset_t e);
-string toStringEtatset(etatset_t e);
-
-void test();
 
 #endif
