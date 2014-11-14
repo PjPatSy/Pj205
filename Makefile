@@ -1,6 +1,6 @@
 CC=g++
 #CFLAGS=-c -Wall -Wextra -ansi -pedantic -std=c++11 -stdlib=libc++
-CFLAGS=-c -Wall -Wextra
+CFLAGS=-c -Wall -Wextra -ansi -pedantic
 LDFLAGS=
 SOURCES= $(wildcard src/*.cpp src/tinyxml/*.cpp)
 INCLUDES = $(wildcard src/tinyxml/*.h)
@@ -16,8 +16,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f ndet src/*.o src/tinyxml/*.o src/*~ *~ 
-  # $(EXECUTABLE)
+	rm -f $(EXECUTABLE) src/*.o src/tinyxml/*.o src/*~ *~ 
 
 mrporper:
 	rm -f $(EXECUTABLE)

@@ -1,7 +1,7 @@
 #include "ndet.h"
 
-void Help(ostream& out, char *s);
 void test();
+void Help(ostream& out, char *s);
 
 int main(int argc, char* argv[] ){
 
@@ -129,7 +129,7 @@ int main(int argc, char* argv[] ){
 	}
 
 	/* Les options sont OK, on va essayer de lire le(s) automate(s) at1 (et at2)
-	et effectuer l'action spécifiée. Atr stockera le résultat*/
+	et effectuer l'action spécifiée. Atr stockera le résultat */
 
 	sAutoNDE at1, at2, atr;
 
@@ -203,25 +203,7 @@ int main(int argc, char* argv[] ){
 	return EXIT_SUCCESS;
 }
 
-void Help(ostream& out, char *s){
-  out << "Utilisation du programme " << s << " :" << endl ;
-  out << "-acc ou -accept Input Word:\n\t détermine si le mot Word est accepté" << endl;
-  out << "-det ou -determinize Input :\n\t déterminise Input" << endl;
-  out << "-cup ou -union Input1 Input2 :\n\t calcule l'union" << endl;
-  out << "-cat ou -concat Input1 Input2 :\n\t calcul la concaténation" << endl;
-  out << "-star ou -kleene Input :\n\t calcul de A*" << endl;
-  out << "-bar ou -complement Input :\n\t calcul du complément" << endl;
-  out << "-cap ou -intersection Input1 Input2 :\n\t calcul de l'intersection par la loi de De Morgan" << endl;
-  out << "-prod ou -produit Input1 Input2 :\n\t calcul de l'intersection par construction de l'automate produit" << endl;
-  out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
-  out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant à Input" << endl;
-  out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
-  out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
-  out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
-  out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;
-  out << "Exemple '" << s << " -minimisation test.jff -output min -j'" << endl;
-}
-
+// appelé lorsque 'test' est passé en paramètre au programme
 void test(){
 	int nbAutomate = 19;
 	string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
@@ -230,19 +212,16 @@ void test(){
 		sAutoNDE automateTXT, automateJFF;
 		
 		FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
+		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
+		
 		system("clear");
 		cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
 		cout << "==> TXT" << automateTXT << endl;
-
-		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
         cout << "==> JFF" << automateJFF << endl;
-
-
 
 		etatset_t cf;
 		cf.insert(1);
 		cf.insert(0);
-        cout << automateTXT.nb_etats << endl;
 		cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
 
 		cout << "==> Deterministe : " << ((EstDeterministe(automateTXT))? "Oui" : "Non") << endl;
@@ -268,4 +247,23 @@ void test(){
         cout << endl << "Appuyez sur entrer pour continuer..." << endl;
 		while(getchar() != '\n');
 	}
+}
+
+void Help(ostream& out, char *s){
+  out << "Utilisation du programme " << s << " :" << endl ;
+  out << "-acc ou -accept Input Word:\n\t détermine si le mot Word est accepté" << endl;
+  out << "-det ou -determinize Input :\n\t déterminise Input" << endl;
+  out << "-cup ou -union Input1 Input2 :\n\t calcule l'union" << endl;
+  out << "-cat ou -concat Input1 Input2 :\n\t calcul la concaténation" << endl;
+  out << "-star ou -kleene Input :\n\t calcul de A*" << endl;
+  out << "-bar ou -complement Input :\n\t calcul du complément" << endl;
+  out << "-cap ou -intersection Input1 Input2 :\n\t calcul de l'intersection par la loi de De Morgan" << endl;
+  out << "-prod ou -produit Input1 Input2 :\n\t calcul de l'intersection par construction de l'automate produit" << endl;
+  out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
+  out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant à Input" << endl;
+  out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
+  out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
+  out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
+  out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;
+  out << "Exemple '" << s << " -minimisation test.jff -output min -j'" << endl;
 }
