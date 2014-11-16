@@ -222,7 +222,7 @@ void test(){
 		etatset_t cf;
 		cf.insert(1);
 		cf.insert(0);
-		cout << "==> ContientFinal " << cf << " : " << ContientFinal(automateTXT, cf) << endl;
+		cout << "==> ContientFinal " << cf << " : " << ((ContientFinal(automateTXT, cf))? "Oui" : "Non") << endl;
 
 		cout << "==> Deterministe : " << ((EstDeterministe(automateTXT))? "Oui" : "Non") << endl;
 
