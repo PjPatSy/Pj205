@@ -112,5 +112,6 @@ sAutoNDE Kleene(const sAutoNDE& x);
 sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 sAutoNDE Minimize(const sAutoNDE& at);
-
+bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max);
+bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2);
 #endif

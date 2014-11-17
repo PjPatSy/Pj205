@@ -122,7 +122,7 @@ bool FromFileJff(sAutoNDE& at, string path){
 		if(strcmp(elem->Value(), "automaton") == 0){
 			elem = elem->FirstChildElement();
 		}
-		
+
 		// Récupère les états
 		at.nb_etats = 0;
 		at.nb_finaux = 0;
@@ -141,7 +141,7 @@ bool FromFileJff(sAutoNDE& at, string path){
 			}
 			elem = elem->NextSiblingElement();
 		}
-		
+
 		// initialisation du nombre de symboles
 		TiXmlElement* elemTrans = elem;
 		while(elemTrans && strcmp(elemTrans->Value(), "transition") == 0){
@@ -169,7 +169,7 @@ bool FromFileJff(sAutoNDE& at, string path){
 		while(elem && strcmp(elem->Value(), "transition") == 0){
 			int from, to, read;
 			bool epsilonTrans = false; // true si on trouve une epsilon transition
-			
+
 			// On admet que les balise from, to, et read sont présentes
 			for(TiXmlElement* tmpEl = elem->FirstChildElement(); tmpEl; tmpEl = tmpEl->NextSiblingElement()){
 				if(strcmp(tmpEl->Value(), "from") == 0){
@@ -188,7 +188,7 @@ bool FromFileJff(sAutoNDE& at, string path){
 					}
 				}
 			}
-			
+
 			//test espilon ou non
 			if(epsilonTrans){
 				at.epsilon[from].insert(to);
@@ -246,9 +246,9 @@ bool EstDeterministe(const sAutoNDE& at){
 etatset_t Delta(const sAutoNDE& at, const etatset_t& e, symb_t c){
     size_t numCar = c - ASCII_A; 	// numéro du caractère
     etatset_t D_etat; 				// liste des états par Delta
-	
+
 	// si le caractère n'est pas dans l'alphabet, retour d'une liste d'état vide
-    if(numCar > at.nb_etats){ 
+    if(numCar > at.nb_etats){
         return D_etat;
     }
 
@@ -503,28 +503,21 @@ string toStringEtatset(etatset_t e){
     str += "}";
     return str;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-// -----------------------------------------------------------------------------
-// Fonctions à compléter pour la seconde partie du projet
-// -----------------------------------------------------------------------------
-
 bool ToGraph(sAutoNDE& at, string path){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	return true;
+  return true;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 bool ToJflap(sAutoNDE& at, string path){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	return true;
+    // -- Mettre 0, cela les génère par défaut (Vérifier)
+
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -533,80 +526,126 @@ bool ToJflap(sAutoNDE& at, string path){
 // en renommant ses états, id est en décallant les indices des états de y
 // de x.nb_etats
 sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
-	//TODO définir cette fonction
-	assert(x.nb_symbs == y.nb_symbs);
-	sAutoNDE r;
+    //TODO définir cette fonction
 
-	return r;
+    sAutoNDE r = x;
+    r.nb_etats += y.nb_etats;
+    r.nb_finaux += y.nb_finaux;
+    r.nb_symbs = ((y.nb_symbs > x.nb_symbs)? y.nb_symbs : x.nb_symbs);
+    for(etatset_t::iterator it = y.finaux.begin(); it != y.finaux.end(); it++){
+       r.finaux.insert(x.nb_etats + *it);
+    }
+    //r.epsilon.resize(x.epsilon.size()+ y.epsilon.size());
+    r.trans.resize(r.nb_etats);
+    for(int i=((r.nb_symbs > x.nb_symbs)? 0 : x.nb_etats); i < r.nb_etats; i++){
+        r.trans[i].resize(r.nb_symbs);
+    }
+
+
+    for(int i=0; i < y.epsilon.size(); i++){
+        r.epsilon.push_back(y.epsilon[i]);
+        //for(etatset_t::iterator it = y.epsilon[i-x.epsilon.size()].begin())
+    }
+
+
+
+    // assert(x.nb_symbs == y.nb_symbs);
+
+
+    return r;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	assert(x.nb_symbs == y.nb_symbs);
-	sAutoNDE r = Append(x, y);
+    assert(x.nb_symbs == y.nb_symbs);
+    sAutoNDE r = Append(x, y);
 
-	return r;
+    return r;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
 sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	assert(x.nb_symbs == y.nb_symbs);
-	sAutoNDE r = Append(x, y);
+  assert(x.nb_symbs == y.nb_symbs);
+  sAutoNDE r = Append(x, y);
 
-	return r;
+  return r;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Complement(const sAutoNDE& x){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	return x;
+  return x;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Kleene(const sAutoNDE& x){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	return x;
+  return x;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // Intersection avec la loi de De Morgan
 sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	return x;
+  return x;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // Intersection avec l'automate produit
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	sAutoNDE r;
+  sAutoNDE r;
 
-	return r;
+  return r;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Minimize(const sAutoNDE& at){
-	//TODO définir cette fonction
+  //TODO définir cette fonction
 
-	assert(EstDeterministe(at));
-	sAutoNDE r;
+  assert(EstDeterministe(at));
+  sAutoNDE r;
 
-	return r;
+  return r;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// détermine la pseudo équivalence par comparaison de tous les mots de Sigma* de longueur < à word_size_max
+bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max) {
+  //TODO définir cette fonction
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// détermine l'équivalence par "égalité" des automates :
+//   - même nombre d'états
+//   - même état initial
+//   - mêmes états finaux
+//   - même table de transition
+// à un renommage des états près
+bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
+  //TODO définir cette fonction
+
+  return false;
 }
