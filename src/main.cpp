@@ -5,9 +5,33 @@ void Help(ostream& out, char *s);
 
 int main(int argc, char* argv[] ){
     sAutoNDE a, b;
-    Append(a, b);
+    sAutoNDE r;
 
+    if(!FromFileTxt(a, "exemples/automate_ND_ex1.txt")){
+        cout << "faux" << endl;
+    }
+    if(!FromFileTxt(b, "exemples/automate_D_ex2.txt")){
+        cout << "faux 2" << endl;
+    }
 
+    cout << "A : " << a << endl;
+    //cout << "B : " << b << endl;
+    //r = Determinize(a);
+    //r = Append(a, b);
+    //r = Union(a, b);
+    //r = Concat(a,b);
+    //r = Complement(b);
+    //r = Kleene(b);
+    //r = Intersection(a, b);
+//    if(PseudoEquivalent(r,a, 1000)){
+//        cout << "Ils sont equivalents..." << endl;
+//    }
+//    else{
+//        cout << "Non equivalents..." << endl;
+//    }
+    r = Minimize(a);
+    ToJflap(a, "res.jff");
+    //cout << r << endl;
 
     //test();
 //    if(argc < 3){
