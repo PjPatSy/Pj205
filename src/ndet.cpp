@@ -536,7 +536,7 @@ bool ToJflap(sAutoNDE& at, string path){
     elStructure->LinkEndChild(elAutomaton);
 
     // Ajoute les états
-    for(int i=0; i < at.nb_etats; i++){
+    for(unsigned int i=0; i < at.nb_etats; i++){
         TiXmlElement * elState = new TiXmlElement("state");
         stringstream intToStr;
         intToStr << "q" << i;
@@ -562,8 +562,8 @@ bool ToJflap(sAutoNDE& at, string path){
     }
 
     // Ajoute les transitions
-    for(int i=0; i < at.nb_etats; i++){
-        for(int symb=0; symb < at.nb_symbs; symb++){
+    for(unsigned int i=0; i < at.nb_etats; i++){
+        for(unsigned int symb=0; symb < at.nb_symbs; symb++){
             if(!at.trans[i][symb].empty()){
                 for(etatset_t::iterator it = at.trans[i][symb].begin(); it != at.trans[i][symb].end(); it++){
                     stringstream intToStr;
@@ -641,13 +641,13 @@ sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
     r.epsilon.resize(r.nb_etats);
     r.trans.resize(r.nb_etats);
     // Resize (i = 0 si y à plus de symboles que x et i = nombre d'état de x sinon, pour resize seulement les trans de y dans r
-    for(int i=((r.nb_symbs > x.nb_symbs)? 0 : x.nb_etats); i < r.nb_etats; i++){
+    for(unsigned int i=((r.nb_symbs > x.nb_symbs)? 0 : x.nb_etats); i < r.nb_etats; i++){
         r.trans[i].resize(r.nb_symbs);
     }
 
-    for(int i=0; i < y.nb_etats; i++){
+    for(unsigned int i=0; i < y.nb_etats; i++){
 
-        for(int symb=0; symb < y.nb_symbs; symb++){ // symb représente le symbole courant
+        for(unsigned int symb=0; symb < y.nb_symbs; symb++){ // symb représente le symbole courant
             etatset_t etatArr; // Temporaire permetant de changer les numéro des états d'arrivée de y.trans[i][j]
             for(etatset_t::iterator it = y.trans[i][symb].begin(); it != y.trans[i][symb].end(); it++){
                 etatArr.insert(*it + x.nb_etats); // x.nb_etat nous sert d'offset pour renuméroté les états
@@ -712,7 +712,7 @@ sAutoNDE Complement(const sAutoNDE& x){
     }
     etatset_t cpFinaux = r.finaux;
     r.finaux.clear();
-    for(int i=0; i < r.nb_etats; i++){ // Inverse les finiaux et les non finauw
+    for(unsigned int i=0; i < r.nb_etats; i++){ // Inverse les finiaux et les non finauw
         if(cpFinaux.find(i) == cpFinaux.end()){
             r.finaux.insert(i);
         }
@@ -776,33 +776,33 @@ sAutoNDE Minimize(const sAutoNDE& at){
         r = at;
     }
     etatset_t first;
-    for(int i=0; i < r.nb_etats; i++){
+    for(unsigned int i=0; i < r.nb_etats; i++){
         if(r.finaux.find(i) == r.finaux.end()){ // Insert tous les états non finaux
             first.insert(i);
         }
     }
     if(!first.empty()){
-        equiCl.push_back(first);
+        equiCl.push_back(first); // Ajoute la classe des non finaux
     }
-    equiCl.push_back(at.finaux);
-    int dd = 0;
-    cout << "First : " << first << endl;
+    equiCl.push_back(at.finaux); // Ajoute la classe des finaux
 
-    while(dd != 5){
-        cout << "Nv cl : ";
-        for(int d=0; d < equiCl.size(); d++){
+    unsigned int nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
+    do{
+        cout << "Nv clases : ";
+        for(unsigned int d=0; d < equiCl.size(); d++){
             cout << equiCl[d] << " ";
         }
         cout << endl;
-
+        nbEquiClPre = equiCl.size();
         vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
-        for(int i=0; i < equiCl.size(); i++){
+        vector<int> listSingle; // contiendra la liste des indices des classes contenant un seul état, celle si ne peuvent être équivalentes à aucun état
+        for(unsigned int i=0; i < equiCl.size(); i++){
             if(equiCl[i].size() > 1){
                 for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
                     bool etatAdd = false;
-                    for(int j=0; j < nwListCl.size(); j++){
+                    for(unsigned int j=0; j < nwListCl.size(); j++){
                         etatset_t::iterator curState = nwListCl[j].begin(); // On regarde seulement le premier état de la liste (car tous les états de cette liste sont équivalents)
-                        int symb;
+                        unsigned int symb;
                         for(symb=0; symb < at.nb_symbs; symb++){
                             etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
                             etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
@@ -914,13 +914,17 @@ sAutoNDE Minimize(const sAutoNDE& at){
 //                }
             }
             else{
-                nwListCl.push_back(equiCl[i]); // ------------------------------------- Pas très optimisé, car il est comparé aux autres
+                listSingle.push_back(i); // On met à part les classes qui ne contiennent qu'un seul état
             }
         }
         equiCl.clear();
+        for(unsigned int j=0; j < listSingle.size(); j++){
+            nwListCl.push_back(equiCl[listSingle[j]]); // On rajoute les classe contenant un seul état
+        }
         equiCl = nwListCl;
-        dd++;
-    }
+    }while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
+
+
 
     return r;
 }
@@ -930,10 +934,9 @@ sAutoNDE Minimize(const sAutoNDE& at){
 
 // détermine la pseudo équivalence par comparaison de tous les mots de Sigma* de longueur < à word_size_max
 bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max) {
-    int nbSymb = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
-    int curSymb = 0;
+    unsigned int nbSymb = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
     string word = "";
-    for(int i=0; i < word_size_max; i++){
+    for(unsigned int i=0; i < word_size_max; i++){
         cout << "Word : " << word << endl; // ------------------- Supprimer l'affichage
         if(Accept(a1, word) != Accept(a2, word)){ // Si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
             return false;
