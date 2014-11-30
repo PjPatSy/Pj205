@@ -789,31 +789,136 @@ sAutoNDE Minimize(const sAutoNDE& at){
     cout << "First : " << first << endl;
 
     while(dd != 5){
+        cout << "Nv cl : ";
+        for(int d=0; d < equiCl.size(); d++){
+            cout << equiCl[d] << " ";
+        }
+        cout << endl;
+
+        vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
         for(int i=0; i < equiCl.size(); i++){
-            vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
-            for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
-                etatset_t::iterator it2 = it;
-                for(it2++; it2 != equiCl[i].end(); it2++){
-                   //cout << "it 2 : " << *it2 << endl;
-                    bool same = true;
-                    for(int symb=0; same == true && symb < at.nb_symbs; symb++){
-                        for(int j=0; j < equiCl.size(); j++){
+            if(equiCl[i].size() > 1){
+                for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
+                    bool etatAdd = false;
+                    for(int j=0; j < nwListCl.size(); j++){
+                        etatset_t::iterator curState = nwListCl[j].begin(); // On regarde seulement le premier état de la liste (car tous les états de cette liste sont équivalents)
+                        int symb;
+                        for(symb=0; symb < at.nb_symbs; symb++){
                             etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
-                            etatset_t::iterator etatArr2 = at.trans[*it2][symb].begin();
-                            cout << "It " << *it2 << "Symb : " << (char)(symb+ASCII_A) << endl;
-                            cout << "Res : " << *etatArr2 << endl;
-                            equiCl[j].find(6);
-//                            if(equiCl[j].find(*etatArr1) != equiCl[j].find(*etatArr2)){
-//                                same = false;
-//                                break;
-//                            }
+                            etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
+                            bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
+                            bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
+                            if(prst1 != prst2){
+                                break;
+                            }
+                        }
+                        if(symb >= at.nb_symbs){ // Si l'état appartient à cette classe (classe j)
+                            nwListCl[j].insert(*it);
+                            etatAdd = true;
+                            break;
                         }
                     }
+                    if(!etatAdd){ // Ajoute une nouvelle classe
+                        etatset_t nwCl;
+                        nwCl.insert(*it);
+                        nwListCl.push_back(nwCl);
+                    }
                 }
+//                for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
+//                    etatset_t::iterator it2 = it;
+//                    for(it2++; it2 != equiCl[i].end(); it2++){
+//                        bool same = true;
+//                        for(int symb=0; same == true && symb < at.nb_symbs; symb++){
+//                            for(int j=0; j < equiCl.size(); j++){
+//                                etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
+//                                etatset_t::iterator etatArr2 = at.trans[*it2][symb].begin();
+//                                bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
+//                                bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
+////                                cout << "It " << *it2 << "Symb : " << (char)(symb+ASCII_A) << endl;
+////                                cout << "Res : " << *etatArr2 << endl;
+//
+//                                if(prst1 != prst2){
+//                                    //cout << "it : " << *it << " itD : " << *it2 << " Symb : " << (char)(symb+ASCII_A) << endl;
+//                                    same = false;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                         cout << "Nv cl : ";
+//                        for(int d=0; d < nwListCl.size(); d++){
+//                            cout << nwListCl[d] << " ";
+//                        }
+//                        cout << endl;
+//
+//                        bool etat1Add = false;
+//                        bool etat2Add = ((same)? true : false);
+//                        for(int j=0; j < nwListCl.size() && (!etat1Add || !etat2Add); j++){
+//                            if(!etat1Add){
+//                                etatset_t::iterator curState = nwListCl[j].begin();
+//                                int symb;
+//                                for(symb=0; symb < at.nb_symbs; symb++){
+//                                    etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
+//                                    etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
+//                                    bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
+//                                    bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
+//                                    if(prst1 != prst2){
+//                                        break;
+//                                    }
+//                                }
+//                                if(symb >= at.nb_symbs){ // Si l'état appartient à cette classe (classe j)
+//                                    nwListCl[j].insert(*it);
+//                                    //cout << "Appartient : " << *it;
+//                                    etat1Add = true;
+//                                    if(same){
+//                                        nwListCl[j].insert(*it2);
+//                                       // cout << " et " << *it2;
+//                                    }
+//                                    //cout << " C " << nwListCl[j] << endl;
+//                                }
+//                            }
+//                            if(!etat2Add){
+//                                etatset_t::iterator curState = nwListCl[j].begin();
+//                                int symb;
+//                                for(symb=0; symb < at.nb_symbs; symb++){
+//                                    etatset_t::iterator etatArr1 = at.trans[*it2][symb].begin();
+//                                    etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
+//                                    bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
+//                                    bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
+//                                    if(prst1 != prst2){
+//                                        break;
+//                                    }
+//                                }
+//                                if(symb >= at.nb_symbs){ // Si l'état appartient à cette classe (classe j)
+//                                    //cout << "AppartientD : " << *it2 << " C " << nwListCl[j] << endl;
+//                                    nwListCl[j].insert(*it2);
+//                                    etat2Add = true;
+//                                }
+//                            }
+//                        }
+//                        if(!etat1Add){
+//                            etatset_t nwCl;
+//                            nwCl.insert(*it);
+//                            if(same){
+//                                nwCl.insert(*it2);
+//                            }
+//                            cout << "Nouveau : " << nwCl << endl;
+//                            nwListCl.push_back(nwCl);
+//                        }
+//                        if(!etat2Add){
+//                            etatset_t nwCl;
+//                            nwCl.insert(*it2);
+//                            cout << "NouveauD : " << nwCl << " 1er etat : " << *it << endl;
+//                            nwListCl.push_back(nwCl);
+//                        }
+//                    }
+//                }
+            }
+            else{
+                nwListCl.push_back(equiCl[i]); // ------------------------------------- Pas très optimisé, car il est comparé aux autres
             }
         }
-
-
+        equiCl.clear();
+        equiCl = nwListCl;
         dd++;
     }
 
