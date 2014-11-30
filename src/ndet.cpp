@@ -765,6 +765,7 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// On utilise les principes de l'algoritme de Moore
 sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE r;
     vector<etatset_t> equiCl; // Les classes d'équivalence
