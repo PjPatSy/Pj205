@@ -511,7 +511,17 @@ string toStringEtatset(etatset_t e){
 }
 
 bool ToGraph(sAutoNDE& at, string path){
-  //TODO définir cette fonction
+    iftream file(path, ios::out | ios::trunc);
+    if(!file){
+        return false;
+    }
+    file << "digraph finite_state_machine {" << endl;
+    file << "rankdir=LR;" << endl;
+    file << "size=\"10,10\"" << endl << endl;
+
+
+    file << "}";
+    file.close();
 
   return true;
 }
@@ -667,8 +677,6 @@ sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
-  //TODO définir cette fonction
-
     assert(x.nb_symbs == y.nb_symbs);
     sAutoNDE r = Append(x, y);
 
@@ -768,27 +776,32 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
 // On utilise les principes de l'algoritme de Moore
 sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE r;
+    sAutoNDE nwAuto; // Automate at transformé s'il est non déterministe
     vector<etatset_t> equiCl; // Les classes d'équivalence
 
     if(!EstDeterministe(at)){ // S'il n'est pas déterministe, on le déterminise
-        r = Determinize(at);
+        nwAuto = Determinize(at);
     }
     else{
-        r = at;
+        nwAuto = at;
     }
     etatset_t first;
-    for(unsigned int i=0; i < r.nb_etats; i++){
-        if(r.finaux.find(i) == r.finaux.end()){ // Insert tous les états non finaux
+    for(unsigned int i=0; i < nwAuto.nb_etats; i++){
+        if(nwAuto.finaux.find(i) == nwAuto.finaux.end()){ // Insert tous les états non finaux
             first.insert(i);
         }
     }
+
+
+
     if(!first.empty()){
         equiCl.push_back(first); // Ajoute la classe des non finaux
     }
-    equiCl.push_back(at.finaux); // Ajoute la classe des finaux
-    int dd=0;
+    equiCl.push_back(nwAuto.finaux); // Ajoute la classe des finaux
     unsigned int nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
+    int nbClAdd; // Nombre de classes déjà ajoutées
     do{
+        nbClAdd = 0;
         cout << "Nv clases : ";
         for(unsigned int d=0; d < equiCl.size(); d++){
             cout << equiCl[d] << " ";
@@ -797,25 +810,25 @@ sAutoNDE Minimize(const sAutoNDE& at){
         nbEquiClPre = equiCl.size();
         vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
         vector<int> listSingle; // contiendra la liste des indices des classes contenant un seul état, celle si ne peuvent être équivalentes à aucun état
-        int nbClAdd = 0; // Nombre de classes déjà ajoutées
+
         for(unsigned int i=0; i < equiCl.size(); i++){
-            int cpt = 0;
+            int nbClAddForCl = 0; // Nombre de classes crées dans l'équivalence i pour une classe d'équivalence i-1
             if(equiCl[i].size() > 1){
                 for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
                     bool etatAdd = false;
                     for(unsigned int j=nbClAdd; j < nwListCl.size(); j++){
                         etatset_t::iterator curState = nwListCl[j].begin(); // On regarde seulement le premier état de la liste (car tous les états de cette liste sont équivalents)
                         unsigned int symb;
-                        for(symb=0; symb < at.nb_symbs; symb++){
-                            etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
-                            etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
-                            bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
-                            bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
+                        for(symb=0; symb < nwAuto.nb_symbs; symb++){
+                            etatset_t::iterator etatArr1 = nwAuto.trans[*it][symb].begin();
+                            etatset_t::iterator etatArr2 = nwAuto.trans[*curState][symb].begin();
+                            bool prst1 = ((equiCl[i].find(*etatArr1) == equiCl[i].end())? false : true); // si etatArr1 est présent
+                            bool prst2 = ((equiCl[i].find(*etatArr2) == equiCl[i].end())? false : true); // si etatArr2 est présent
                             if(prst1 != prst2){
                                 break;
                             }
                         }
-                        if(symb >= at.nb_symbs){ // Si l'état appartient à cette classe (classe j)
+                        if(symb >= nwAuto.nb_symbs){ // Si l'état appartient à cette classe (classe j)
                             nwListCl[j].insert(*it);
                             etatAdd = true;
                             break;
@@ -825,24 +838,58 @@ sAutoNDE Minimize(const sAutoNDE& at){
                         etatset_t nwCl;
                         nwCl.insert(*it);
                         nwListCl.push_back(nwCl);
-                        cpt++;
+                        nbClAddForCl++;
                     }
                 }
-                nbClAdd += cpt;
+
             }
             else{
-                listSingle.push_back(i);
+                nwListCl.push_back(equiCl[i]);
+                nbClAddForCl++;
             }
-
+            nbClAdd += nbClAddForCl;
         }
         equiCl.clear();
         for(unsigned int j=0; j < listSingle.size(); j++){
             nwListCl.push_back(equiCl[listSingle[j]]); // On rajoute les classe contenant un seul état
         }
-        dd++;
         equiCl = nwListCl;
-    }while(dd < 5); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
-    //}while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
+    }while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
+
+    r.nb_symbs = nwAuto.nb_symbs;
+    r.nb_etats = equiCl.size();
+    r.epsilon.resize(r.nb_etats); // Utile si on fait des opérations sur cet automate par la suite
+    r.trans.resize(r.nb_etats);
+    for(int i=0; i < r.nb_etats; i++){
+        r.trans[i].resize(nwAuto.nb_symbs);
+    }
+
+    for(int i=0; i < equiCl.size(); i++){
+        etatset_t::iterator fState = equiCl[i].begin(); // fState : premier état de la classe
+        for(int symb=0; symb < nwAuto.nb_symbs; symb++){
+            etatset_t::iterator arrState = nwAuto.trans[*fState][symb].begin(); // L'état d'arrivé en fonction de l'état fState et du symbole symb
+            for(int j=0; j < equiCl.size(); j++){
+                if(equiCl[j].find(*arrState) != equiCl[j].end()){
+                    r.trans[i][symb].insert(j); // i numéro état de départ, j numéro état d'arrivée
+                    break;
+                }
+            }
+        }
+        // Ajoute les états finaux
+        for(etatset_t::iterator it = nwAuto.finaux.begin(); it != nwAuto.finaux.end(); it++){
+            if(equiCl[i].find(*it) != equiCl[i].end()){
+                r.finaux.insert(i);
+                break;
+            }
+        }
+        if(equiCl[i].find(nwAuto.initial) != equiCl[i].end()){
+            r.initial = i;
+        }
+
+    }
+    r.nb_finaux = r.finaux.size();
+
+    cout << "Auto : " << r << endl;
 
 
 
@@ -886,10 +933,10 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
 //   - même table de transition
 // à un renommage des états près
 bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
-//    int nbSym = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
-//    if(a1.nb_etats != a2.nb_etats){
-//        return false;
-//    }
+    int nbSym = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
+    if(a1.nb_etats != a2.nb_etats){
+        return false;
+    }
 //    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
 //    for(int i=0; i < a1.nb_etats; i++){
 //        for(int j=0; j < nbSym; j++){
