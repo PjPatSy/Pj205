@@ -7,7 +7,7 @@ int main(int argc, char* argv[] ){
     sAutoNDE a, b;
     sAutoNDE r;
 
-    if(!FromFile(a, "test_D_ex1.jff")){
+    if(!FromFile(a, "test.jff")){
         cout << "faux" << endl;
     }
     if(!FromFileTxt(b, "exemples/automate_D_ex2.txt")){

@@ -786,7 +786,7 @@ sAutoNDE Minimize(const sAutoNDE& at){
         equiCl.push_back(first); // Ajoute la classe des non finaux
     }
     equiCl.push_back(at.finaux); // Ajoute la classe des finaux
-
+    int dd=0;
     unsigned int nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
     do{
         cout << "Nv clases : ";
@@ -797,11 +797,13 @@ sAutoNDE Minimize(const sAutoNDE& at){
         nbEquiClPre = equiCl.size();
         vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
         vector<int> listSingle; // contiendra la liste des indices des classes contenant un seul état, celle si ne peuvent être équivalentes à aucun état
+        int nbClAdd = 0; // Nombre de classes déjà ajoutées
         for(unsigned int i=0; i < equiCl.size(); i++){
+            int cpt = 0;
             if(equiCl[i].size() > 1){
                 for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
                     bool etatAdd = false;
-                    for(unsigned int j=0; j < nwListCl.size(); j++){
+                    for(unsigned int j=nbClAdd; j < nwListCl.size(); j++){
                         etatset_t::iterator curState = nwListCl[j].begin(); // On regarde seulement le premier état de la liste (car tous les états de cette liste sont équivalents)
                         unsigned int symb;
                         for(symb=0; symb < at.nb_symbs; symb++){
@@ -823,107 +825,24 @@ sAutoNDE Minimize(const sAutoNDE& at){
                         etatset_t nwCl;
                         nwCl.insert(*it);
                         nwListCl.push_back(nwCl);
+                        cpt++;
                     }
                 }
-//                for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
-//                    etatset_t::iterator it2 = it;
-//                    for(it2++; it2 != equiCl[i].end(); it2++){
-//                        bool same = true;
-//                        for(int symb=0; same == true && symb < at.nb_symbs; symb++){
-//                            for(int j=0; j < equiCl.size(); j++){
-//                                etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
-//                                etatset_t::iterator etatArr2 = at.trans[*it2][symb].begin();
-//                                bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
-//                                bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
-////                                cout << "It " << *it2 << "Symb : " << (char)(symb+ASCII_A) << endl;
-////                                cout << "Res : " << *etatArr2 << endl;
-//
-//                                if(prst1 != prst2){
-//                                    //cout << "it : " << *it << " itD : " << *it2 << " Symb : " << (char)(symb+ASCII_A) << endl;
-//                                    same = false;
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                         cout << "Nv cl : ";
-//                        for(int d=0; d < nwListCl.size(); d++){
-//                            cout << nwListCl[d] << " ";
-//                        }
-//                        cout << endl;
-//
-//                        bool etat1Add = false;
-//                        bool etat2Add = ((same)? true : false);
-//                        for(int j=0; j < nwListCl.size() && (!etat1Add || !etat2Add); j++){
-//                            if(!etat1Add){
-//                                etatset_t::iterator curState = nwListCl[j].begin();
-//                                int symb;
-//                                for(symb=0; symb < at.nb_symbs; symb++){
-//                                    etatset_t::iterator etatArr1 = at.trans[*it][symb].begin();
-//                                    etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
-//                                    bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
-//                                    bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
-//                                    if(prst1 != prst2){
-//                                        break;
-//                                    }
-//                                }
-//                                if(symb >= at.nb_symbs){ // Si l'état appartient à cette classe (classe j)
-//                                    nwListCl[j].insert(*it);
-//                                    //cout << "Appartient : " << *it;
-//                                    etat1Add = true;
-//                                    if(same){
-//                                        nwListCl[j].insert(*it2);
-//                                       // cout << " et " << *it2;
-//                                    }
-//                                    //cout << " C " << nwListCl[j] << endl;
-//                                }
-//                            }
-//                            if(!etat2Add){
-//                                etatset_t::iterator curState = nwListCl[j].begin();
-//                                int symb;
-//                                for(symb=0; symb < at.nb_symbs; symb++){
-//                                    etatset_t::iterator etatArr1 = at.trans[*it2][symb].begin();
-//                                    etatset_t::iterator etatArr2 = at.trans[*curState][symb].begin();
-//                                    bool prst1 = ((equiCl[j].find(*etatArr1) == equiCl[j].end())? false : true); // si etatArr1 est présent
-//                                    bool prst2 = ((equiCl[j].find(*etatArr2) == equiCl[j].end())? false : true); // si etatArr2 est présent
-//                                    if(prst1 != prst2){
-//                                        break;
-//                                    }
-//                                }
-//                                if(symb >= at.nb_symbs){ // Si l'état appartient à cette classe (classe j)
-//                                    //cout << "AppartientD : " << *it2 << " C " << nwListCl[j] << endl;
-//                                    nwListCl[j].insert(*it2);
-//                                    etat2Add = true;
-//                                }
-//                            }
-//                        }
-//                        if(!etat1Add){
-//                            etatset_t nwCl;
-//                            nwCl.insert(*it);
-//                            if(same){
-//                                nwCl.insert(*it2);
-//                            }
-//                            cout << "Nouveau : " << nwCl << endl;
-//                            nwListCl.push_back(nwCl);
-//                        }
-//                        if(!etat2Add){
-//                            etatset_t nwCl;
-//                            nwCl.insert(*it2);
-//                            cout << "NouveauD : " << nwCl << " 1er etat : " << *it << endl;
-//                            nwListCl.push_back(nwCl);
-//                        }
-//                    }
-//                }
+                nbClAdd += cpt;
             }
             else{
-                listSingle.push_back(i); // On met à part les classes qui ne contiennent qu'un seul état
+                listSingle.push_back(i);
             }
+
         }
         equiCl.clear();
         for(unsigned int j=0; j < listSingle.size(); j++){
             nwListCl.push_back(equiCl[listSingle[j]]); // On rajoute les classe contenant un seul état
         }
+        dd++;
         equiCl = nwListCl;
-    }while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
+    }while(dd < 5); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
+    //}while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
 
 
 
