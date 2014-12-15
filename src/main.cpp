@@ -10,12 +10,14 @@ int main(int argc, char* argv[] ){
     if(!FromFile(a, "test.jff")){
         cout << "faux" << endl;
     }
-    if(!FromFileTxt(b, "exemples/automate_D_ex2.txt")){
+    if(!FromFileTxt(b, "exemples/automate_NDE_ex2.txt")){
         cout << "faux 2" << endl;
     }
 
-    cout << "A : " << a << endl;
-    //cout << "B : " << b << endl;
+    //cout << "A : " << a << endl;
+    cout << "B : " << b << endl;
+    Produit(a, b);
+    //ToGraph(b, "test.gv");
     //r = Determinize(a);
     //r = Append(a, b);
     //r = Union(a, b);
@@ -29,8 +31,8 @@ int main(int argc, char* argv[] ){
 //    else{
 //        cout << "Non equivalents..." << endl;
 //    }
-    r = Minimize(a);
-    ToJflap(a, "res.jff");
+//    r = Minimize(a);
+//    ToJflap(a, "res.jff");
     //cout << r << endl;
 
     //test();
