@@ -7,16 +7,20 @@ int main(int argc, char* argv[] ){
     sAutoNDE a, b;
     sAutoNDE r;
 
-    if(!FromFile(a, "test.jff")){
-        cout << "faux" << endl;
+    if(!FromFile(a, "ex2.jff")){
+        cout << "faux 1" << endl;
     }
-    if(!FromFileTxt(b, "exemples/automate_NDE_ex2.txt")){
+    if(!FromFile(b, "exemples/automate_ND_ex6.jff")){
         cout << "faux 2" << endl;
     }
 
-    //cout << "A : " << a << endl;
+    cout << "A : " << a << endl;
     cout << "B : " << b << endl;
-    Produit(a, b);
+    //r = Produit(b, a);
+    PseudoEquivalent(a, a, 100);
+    r = Minimize(a);
+    //cout << "R : " << r << endl;
+
     //ToGraph(b, "test.gv");
     //r = Determinize(a);
     //r = Append(a, b);
@@ -32,7 +36,7 @@ int main(int argc, char* argv[] ){
 //        cout << "Non equivalents..." << endl;
 //    }
 //    r = Minimize(a);
-//    ToJflap(a, "res.jff");
+    ToJflap(r, "res.jff");
     //cout << r << endl;
 
     //test();

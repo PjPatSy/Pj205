@@ -336,6 +336,10 @@ sAutoNDE Determinize(const sAutoNDE& at){
             res = fermeture.insert(pair<etatset_t, etat_t>(tmp, i+offset));
             if(i+offset == at.initial){
                 corespEtat.insert(pair<etatset_t, etat_t>(tmp, i+offset)); // On ajoute seulement l'état initial
+                // Seulement l'élément initial est testé si final, les autres états seront testés après(Pour éviter aussi que la poubelle soint ajouter en final dans certains cas)
+                if(ContientFinal(at, tmp)){
+                    rAutoD.finaux.insert(i); // ajoute l'état actuel comme final
+                }
             }
             cout << "   E(" << i << ") = " << tmp;
             // si cette fermeture existe déjà, on ne rajoute pas d'état dans l'automate final
@@ -343,11 +347,6 @@ sAutoNDE Determinize(const sAutoNDE& at){
                 cout << " = E(" << res.first->second << ")"; // map_t fermeture sert seulement à cet affichage, n'est pas très utile
                 i--; // comme on a enregistré aucun état dans la map correspondant à l'état i on reste sur cet indice
                 offset++; // augmenter l'offset permet de passer l'état suivant dans at même si on est toujours sur le même état dans rAutoD
-            }
-            else{
-                if(ContientFinal(at, tmp)){
-                    rAutoD.finaux.insert(i); // ajoute l'état actuel comme final
-                }
             }
             if((i+offset) == at.initial){
                 // l'état initial de M' est la e-fermeture de l'état initial de M
@@ -783,30 +782,79 @@ sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
 // Intersection avec l'automate produit
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
     sAutoNDE r;
-    int nbSymb = ((x.nb_symbs > y.nb_symbs)? y.nb_symbs : x.nb_symbs);
+    r.nb_etats = x.nb_etats * y.nb_etats;
+    r.nb_symbs = ((x.nb_symbs > y.nb_symbs)? y.nb_symbs : x.nb_symbs);
     map<pair<etat_t, etat_t>, etat_t> listNwStates; // Les nouveaux états du produit
 
+    r.epsilon.resize(r.nb_etats);
+    r.trans.resize(r.nb_etats);
+    for(int i=0; i < r.nb_etats; i++){
+        r.trans[i].resize(r.nb_symbs);
+    }
+
+
     for(int i=0; i < y.nb_etats; i++){
-        for(size_t j=0; j < x.trans.size(); j++){
-            for(size_t symb=0; symb < nbSymb; symb++){
+        for(size_t j=0; j < x.nb_etats; j++){
+            pair<map<pair<etat_t, etat_t>, etat_t>::iterator , bool> res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(j, i), listNwStates.size()));
+            etat_t etatDep = res.first->second; // Le numéro de l'état de départ
+            if(res.second){ // Si c'est un nouvel état
+                if(x.initial == j && y.initial == i){ // Etat initial, la pair contenant l'état initial de x et y
+                    r.initial = etatDep;
+                }
+                if(x.finaux.find(j) != x.finaux.end()){ // Regarde si l'état de gauche est final dans x
+                    r.finaux.insert(etatDep);
+                }
+            }
+
+            //----------------- Transitions simples  ----------------------
+            for(size_t symb=0; symb < r.nb_symbs; symb++){
                 if(!x.trans[j][symb].empty() && !y.trans[i][symb].empty()){
                     for(etatset_t::iterator itX = x.trans[j][symb].begin(); itX != x.trans[j][symb].end(); itX++){
                         for(etatset_t::iterator itY = y.trans[i][symb].begin(); itY != y.trans[i][symb].end(); itY++){
-                            if(listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size())).second){ // Si l'insert est bon, il y a un nouvel état
-
+                            res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size()));
+                            etat_t etatArr = res.first->second; // res.first->second représente le numéro de l'état d'arrivée
+                            r.trans[etatDep][symb].insert(etatArr);
+                            if(res.second){ // Si c'est un nouvel état
+                                if(x.initial == *itX && y.initial == *itY){ // Etat initial, la pair contenant l'état initial de x et y
+                                    r.initial = etatArr;
+                                }
+                                if(y.finaux.find(*itY) != y.finaux.end()){ // On regarde si l'état de droite est final dans y
+                                    r.finaux.insert(etatArr);
+                                }
                             }
+
                         }
                     }
                 }
             }
+
+            //----------------- Epsilon fermetures ----------------------
+            if(!x.epsilon[j].empty() && !y.epsilon[i].empty()){
+                for(etatset_t::iterator itX = x.epsilon[j].begin(); itX != x.epsilon[j].end(); itX++){
+                        for(etatset_t::iterator itY = y.epsilon[i].begin(); itY != y.epsilon[i].end(); itY++){
+                            res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size()));
+                            etat_t etatArr = res.first->second; // res.first->second représente le numéro de l'état d'arrivée
+                            r.epsilon[etatDep].insert(etatArr);
+                            if(res.second){ // Si c'est un nouvel état
+                                if(x.initial == *itX && y.initial == *itY){ // Etat initial, la pair contenant l'état initial de x et y
+                                    r.initial = etatArr;
+                                }
+                                if(y.finaux.find(*itY) != y.finaux.end()){ // On regarde si l'état de droite est final dans y
+                                    r.finaux.insert(etatArr);
+                                }
+                            }
+
+                        }
+                    }
+                }
         }
     }
 
-    // Faire pour les empsylon transitions !!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    cout << "size list : " << listNwStates.size() << endl;
+    r.nb_finaux = r.finaux.size();
+    cout << "Produit : " << endl;
+    cout << "Nouveau etats (" << listNwStates.size() << ")" << endl;
     for(map<pair<etat_t, etat_t>, etat_t>::iterator it = listNwStates.begin(); it != listNwStates.end(); it++){
-        cout << "{" << it->first.first << ", " << it->first.second << "}  -> " << it->second << endl;
+        cout << "{" << it->first.first << "," << it->first.second << "}  -> " << it->second << endl;
     }
 
     return r;
@@ -820,6 +868,7 @@ sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE nwAuto; // Automate at transformé s'il est non déterministe
     vector<etatset_t> equiCl; // Les classes d'équivalence
 
+    cout << "Minimize : " << endl;
     if(!EstDeterministe(at)){ // S'il n'est pas déterministe, on le déterminise
         nwAuto = Determinize(at);
     }
@@ -841,13 +890,15 @@ sAutoNDE Minimize(const sAutoNDE& at){
     equiCl.push_back(nwAuto.finaux); // Ajoute la classe des finaux
     unsigned int nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
     int nbClAdd; // Nombre de classes déjà ajoutées
+    int cpt = 0; // Sert juste pour l'affichage (Conpte le numéro d'équivalence qu'on fait)
     do{
         nbClAdd = 0;
-        cout << "Nouvelles classes : ";
+        cout << "Equivalence " << cpt << " : { ";
+        cpt++;
         for(unsigned int d=0; d < equiCl.size(); d++){
             cout << equiCl[d] << " ";
         }
-        cout << endl;
+        cout << "}" <<endl;
         nbEquiClPre = equiCl.size();
         vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
         vector<int> listSingle; // contiendra la liste des indices des classes contenant un seul état, celle si ne peuvent être équivalentes à aucun état
@@ -896,6 +947,12 @@ sAutoNDE Minimize(const sAutoNDE& at){
         equiCl = nwListCl;
     }while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
 
+    cout << "Equivalence " << cpt << " : { ";
+    for(unsigned int d=0; d < equiCl.size(); d++){
+        cout << equiCl[d] << " ";
+    }
+    cout << "}" << endl;
+
     r.nb_symbs = nwAuto.nb_symbs;
     r.nb_etats = equiCl.size();
     r.epsilon.resize(r.nb_etats); // Utile si on fait des opérations sur cet automate par la suite
@@ -929,8 +986,6 @@ sAutoNDE Minimize(const sAutoNDE& at){
     }
     r.nb_finaux = r.finaux.size();
 
-    cout << "Auto : " << r << endl;
-
     return r;
 }
 
@@ -941,8 +996,8 @@ sAutoNDE Minimize(const sAutoNDE& at){
 bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max) {
     unsigned int nbSymb = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
     string word = "";
-    for(unsigned int i=0; i < word_size_max; i++){
-        cout << "Word : " << word << endl; // ------------------- Supprimer l'affichage
+    for(unsigned int i=0; word.size() <= word_size_max; i++){
+        //cout << "Word : " << word << endl;
         if(Accept(a1, word) != Accept(a2, word)){ // Si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
             return false;
         }
@@ -970,8 +1025,13 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
 //   - même table de transition
 // à un renommage des états près
 bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
-    int nbSym = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
+    if(a1.nb_symbs != a2.nb_symbs){
+        return false;
+    }
     if(a1.nb_etats != a2.nb_etats){
+        return false;
+    }
+    if(a1.nb_finaux != a2.nb_finaux){
         return false;
     }
 //    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
