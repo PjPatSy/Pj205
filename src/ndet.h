@@ -100,18 +100,44 @@ ostream& operator<<(ostream& out, etatset_t e);
 // convertit une liste d'état en chaine de caractères
 string toStringEtatset(etatset_t e);
 
+// -----------------------------------------------------------------------------
+// OPERATION SUR DES AUTOMATES
+// -----------------------------------------------------------------------------
 
+// regroupe deux automates en un seul
+sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y);
+
+// calcule l'union de deux automates
+sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y);
+
+// calcule la concaténation des deux automates
+sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y);
+
+// calcule le complément d'un automate
+sAutoNDE Complement(const sAutoNDE& x);
+
+// calcule un automate *
+sAutoNDE Kleene(const sAutoNDE& x);
+
+// calcule l'intersection des deux automates par application de la loi de Do Morgan
+sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y);
+
+// calcule l'intersection des deux automates produit d'automates
+sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
+
+// -----------------------------------------------------------------------------
+// COMPARAISON D'AUTOMATES
+// -----------------------------------------------------------------------------
+
+bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max);
+bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2);
+sAutoNDE Minimize(const sAutoNDE& at);
+
+// -----------------------------------------------------------------------------
+// SERIALISATION D'AUTOMATE
+// -----------------------------------------------------------------------------
 
 bool ToGraph(sAutoNDE& at, string path);
 bool ToJflap(sAutoNDE& at, string path);
-sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y);
-sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y);
-sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y);
-sAutoNDE Complement(const sAutoNDE& x);
-sAutoNDE Kleene(const sAutoNDE& x);
-sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y);
-sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
-sAutoNDE Minimize(const sAutoNDE& at);
-bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max);
-bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2);
+
 #endif

@@ -3,7 +3,7 @@
 void test();
 void Help(ostream& out, char *s);
 
-int main(int argc, char* argv[] ){
+int main(int argc, char* argv[] ){	
     sAutoNDE a, b;
     sAutoNDE r;
 
