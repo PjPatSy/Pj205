@@ -3,7 +3,7 @@
 void test();
 void Help(ostream& out, char *s);
 
-int main(int argc, char* argv[] ){	
+int main(int argc, char* argv[] ){
     sAutoNDE a, b;
     sAutoNDE r;
 
@@ -17,7 +17,7 @@ int main(int argc, char* argv[] ){
     cout << "A : " << a << endl;
     cout << "B : " << b << endl;
     //r = Produit(b, a);
-    PseudoEquivalent(a, a, 100);
+    PseudoEquivalent(a, a, 10);
     r = Minimize(a);
     //cout << "R : " << r << endl;
 

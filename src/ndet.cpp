@@ -562,7 +562,7 @@ sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
     r.epsilon[r.nb_etats-1].insert(x.initial);
     r.epsilon[r.nb_etats-1].insert(y.initial+x.nb_etats);
     r.initial = r.nb_etats-1;
-    
+
     return r;
 }
 
@@ -585,7 +585,7 @@ sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
 
 sAutoNDE Complement(const sAutoNDE& x){
     sAutoNDE r;
-    
+
     if(!EstDeterministe(x)){
         r = Determinize(x); // il faut le déterminiser pour un complément
     }
@@ -600,7 +600,7 @@ sAutoNDE Complement(const sAutoNDE& x){
         }
     }
     r.nb_finaux = r.finaux.size();
-    
+
     return r;
 }
 
@@ -608,7 +608,7 @@ sAutoNDE Complement(const sAutoNDE& x){
 
 sAutoNDE Kleene(const sAutoNDE& x){
     sAutoNDE r = x;
-    
+
     r.nb_etats += 1; // ajoute un nouvel état devant l'automate
     r.trans.resize(r.nb_etats); // redimension au cas ou il y a réutilisation après
     r.trans[r.nb_etats-1].resize(r.nb_symbs);
@@ -617,7 +617,7 @@ sAutoNDE Kleene(const sAutoNDE& x){
     r.initial = r.nb_etats-1;
     r.finaux.insert(r.nb_etats-1);
 	r.nb_finaux = r.finaux.size();
-	
+
     // ajoute les transitions permetant de revenir des états finaux à l'état initial de x
     for(etatset_t::iterator it = x.finaux.begin(); it != x.finaux.end(); it++){
         r.epsilon[*it].insert(x.initial);
@@ -734,7 +734,7 @@ sAutoNDE Minimize(const sAutoNDE& at){
         nwAuto = at;
     }
     etatset_t first;
-    for(size_t i=0; i < nwAuto.nb_etats; i++){
+    for(unsigned int i=0; i < nwAuto.nb_etats; i++){
         if(nwAuto.finaux.find(i) == nwAuto.finaux.end()){ // Insert tous les états non finaux
             first.insert(i);
         }
@@ -746,14 +746,14 @@ sAutoNDE Minimize(const sAutoNDE& at){
         equiCl.push_back(first); // Ajoute la classe des non finaux
     }
     equiCl.push_back(nwAuto.finaux); // Ajoute la classe des finaux
-    size_t nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
+    unsigned int nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
     int nbClAdd; // Nombre de classes déjà ajoutées
     int cpt = 0; // Sert juste pour l'affichage (Conpte le numéro d'équivalence qu'on fait)
     do{
         nbClAdd = 0;
         cout << "Equivalence " << cpt << " : { ";
         cpt++;
-        for(size_t d=0; d < equiCl.size(); d++){
+        for(unsigned int d=0; d < equiCl.size(); d++){
             cout << equiCl[d] << " ";
         }
         cout << "}" <<endl;
@@ -761,14 +761,14 @@ sAutoNDE Minimize(const sAutoNDE& at){
         vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
         vector<int> listSingle; // contiendra la liste des indices des classes contenant un seul état, celle si ne peuvent être équivalentes à aucun état
 
-        for(size_t i=0; i < equiCl.size(); i++){
+        for(unsigned int i=0; i < equiCl.size(); i++){
             int nbClAddForCl = 0; // Nombre de classes crées dans l'équivalence i pour une classe d'équivalence i-1
             if(equiCl[i].size() > 1){
                 for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
                     bool etatAdd = false;
-                    for(size_t j=nbClAdd; j < nwListCl.size(); j++){
+                    for(unsigned int j=nbClAdd; j < nwListCl.size(); j++){
                         etatset_t::iterator curState = nwListCl[j].begin(); // On regarde seulement le premier état de la liste (car tous les états de cette liste sont équivalents)
-                        size_t symb;
+                        unsigned int symb;
                         for(symb=0; symb < nwAuto.nb_symbs; symb++){
                             etatset_t::iterator etatArr1 = nwAuto.trans[*it][symb].begin();
                             etatset_t::iterator etatArr2 = nwAuto.trans[*curState][symb].begin();
@@ -799,14 +799,14 @@ sAutoNDE Minimize(const sAutoNDE& at){
             nbClAdd += nbClAddForCl;
         }
         equiCl.clear();
-        for(size_t j=0; j < listSingle.size(); j++){
+        for(unsigned int j=0; j < listSingle.size(); j++){
             nwListCl.push_back(equiCl[listSingle[j]]); // On rajoute les classe contenant un seul état
         }
         equiCl = nwListCl;
     }while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
 
     cout << "Equivalence " << cpt << " : { ";
-    for(size_t d=0; d < equiCl.size(); d++){
+    for(unsigned int d=0; d < equiCl.size(); d++){
         cout << equiCl[d] << " ";
     }
     cout << "}" << endl;
@@ -815,15 +815,15 @@ sAutoNDE Minimize(const sAutoNDE& at){
     r.nb_etats = equiCl.size();
     r.epsilon.resize(r.nb_etats); // Utile si on fait des opérations sur cet automate par la suite
     r.trans.resize(r.nb_etats);
-    for(size_t i=0; i < r.nb_etats; i++){
+    for(int i=0; i < r.nb_etats; i++){
         r.trans[i].resize(nwAuto.nb_symbs);
     }
 
-    for(size_t i=0; i < equiCl.size(); i++){
+    for(int i=0; i < equiCl.size(); i++){
         etatset_t::iterator fState = equiCl[i].begin(); // fState : premier état de la classe
-        for(size_t symb=0; symb < nwAuto.nb_symbs; symb++){
+        for(int symb=0; symb < nwAuto.nb_symbs; symb++){
             etatset_t::iterator arrState = nwAuto.trans[*fState][symb].begin(); // L'état d'arrivé en fonction de l'état fState et du symbole symb
-            for(size_t j=0; j < equiCl.size(); j++){
+            for(int j=0; j < equiCl.size(); j++){
                 if(equiCl[j].find(*arrState) != equiCl[j].end()){
                     r.trans[i][symb].insert(j); // i numéro état de départ, j numéro état d'arrivée
                     break;
@@ -854,9 +854,12 @@ sAutoNDE Minimize(const sAutoNDE& at){
 bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max) {
     unsigned int nbSymb = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
     string word = "";
+    cout << "Generation des mots de longueur 0... ";
     for(unsigned int i=0; word.size() <= word_size_max; i++){
-        //cout << "Word : " << word << endl;
-        if(Accept(a1, word) != Accept(a2, word)){ // Si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
+        bool res1 = Accept(a1, word);
+        bool res2 = Accept(a2, word);
+        if(res1 != res2){ // Si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
+            cout << "Le mot \"" << word << "\" " << ((res1)? "est": "n'est pas") << " accepte par le premier automate et " << ((res2)? "l'ai": "pas") << " par le second" << endl;
             return false;
         }
         int j;
@@ -864,6 +867,10 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
             word[j] = ASCII_A;
         }
         if(j < 0){
+            cout << "Tous les mots de longueur " << word.size() << " sont acceptes ou refuses par les deux automates" << endl;
+            if(word.size() < word_size_max){ // Si dernier tour de boucle
+                cout << "Generation des mots de longueur " << word.size()+1 << "... ";
+            }
             word += ASCII_A;
         }
         else{
@@ -883,6 +890,11 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
 //   - même table de transition
 // à un renommage des états près
 bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
+    if(!EstDeterministe(a1) || !EstDeterministe(a2)){
+        cout << "Equivalence : Attention, les automates entres doivent etre deterministes" << endl;
+        return false;
+    }
+
     if(a1.nb_symbs != a2.nb_symbs){
         return false;
     }
@@ -892,6 +904,11 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     if(a1.nb_finaux != a2.nb_finaux){
         return false;
     }
+    map<etat_t, etat_t> correspA1, correspA2;
+
+
+
+
 //    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
 //    for(int i=0; i < a1.nb_etats; i++){
 //        for(int j=0; j < nbSym; j++){
