@@ -23,7 +23,7 @@ bool FromFile(sAutoNDE& at, string path){
 
 bool FromFileTxt(sAutoNDE& at, string path){
 	ifstream myfile(path.c_str(), ios::in);
-	//un flux d'entree obtenu à partir du nom du fichier
+	// un flux d'entree obtenu à partir du nom du fichier
 	string line;
 	// un ligne lue dans le fichier avec getline(myfile,line);
 	istringstream iss;
@@ -315,8 +315,9 @@ void Fermeture(const sAutoNDE& at, etatset_t& e){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Determinize(const sAutoNDE& at){
+	cout << at;
     sAutoNDE rAutoD; // automate déterminisé
-    cout << "Determinise : " << endl;
+
     if(!EstDeterministe(at)){
         map_t corespEtat; // fait la correspondance entre le numéro d'état dans rAutoD, et sa les états qu'il représente dans at
         map_t fermeture; // Pas très utile, seulement pour l'affichage (Pas obligatoire)
@@ -335,8 +336,8 @@ sAutoNDE Determinize(const sAutoNDE& at){
             pair<std::map<etatset_t,etat_t>::iterator,bool> res; // permet d'avoir un retour sur la méthode insert
             res = fermeture.insert(pair<etatset_t, etat_t>(tmp, i+offset));
             if(i+offset == at.initial){
-                corespEtat.insert(pair<etatset_t, etat_t>(tmp, i+offset)); // On ajoute seulement l'état initial
-                // Seulement l'élément initial est testé si final, les autres états seront testés après(Pour éviter aussi que la poubelle soint ajouter en final dans certains cas)
+                corespEtat.insert(pair<etatset_t, etat_t>(tmp, i+offset)); // on ajoute seulement l'état initial
+                // seulement l'élément initial est testé si final, les autres états seront testés après(Pour éviter aussi que la poubelle soint ajouter en final dans certains cas)
                 if(ContientFinal(at, tmp)){
                     rAutoD.finaux.insert(i); // ajoute l'état actuel comme final
                 }
@@ -362,7 +363,7 @@ sAutoNDE Determinize(const sAutoNDE& at){
         //////////////////////////////////////////////////////////////////////////////////////////
         map_t tmpMap1 = corespEtat;	// map temporaire permettant d'enregistrer les états dès qu'on se déplace dans l'automate
         map_t tmpMap2;
-        string str = ""; 			// contiendra des infos sur les transision, sera affichée à la fin de la fonction
+        string str = ""; 			// contiendra des infos sur les transisions, sera affichée à la fin de la fonction
 
         while(!tmpMap1.empty()){
             for(map_t::iterator itM = tmpMap1.begin(); itM != tmpMap1.end(); itM++){
@@ -516,7 +517,6 @@ string toStringEtatset(etatset_t e){
 // on garde x, et on "ajoute" trans et epsilon de y en renommant ses états
 // id est calculé en décallant les indices des états de y de x.nb_etats
 sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
-    assert(x.nb_symbs == y.nb_symbs);
     sAutoNDE r = x;
     r.nb_etats += y.nb_etats;
     r.nb_finaux += y.nb_finaux;
@@ -526,7 +526,7 @@ sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
     }
     r.epsilon.resize(r.nb_etats);
     r.trans.resize(r.nb_etats);
-    // Resize (i = 0 si y à plus de symboles que x et i = nombre d'état de x sinon, pour resize seulement les trans de y dans r
+    // resize (i = 0 si y à plus de symboles que x et i = nombre d'état de x sinon, pour resize seulement les trans de y dans r
     for(size_t i=((r.nb_symbs > x.nb_symbs)? 0 : x.nb_etats); i < r.nb_etats; i++){
         r.trans[i].resize(r.nb_symbs);
     }
@@ -552,7 +552,6 @@ sAutoNDE Append(const sAutoNDE& x, const sAutoNDE& y){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
-    assert(x.nb_symbs == y.nb_symbs);
     sAutoNDE r = Append(x, y);
 
     r.nb_etats += 1;
@@ -569,7 +568,6 @@ sAutoNDE Union(const sAutoNDE& x, const sAutoNDE& y){
 ////////////////////////////////////////////////////////////////////////////////
 
 sAutoNDE Concat(const sAutoNDE& x, const sAutoNDE& y){
-    assert(x.nb_symbs == y.nb_symbs);
     sAutoNDE r = Append(x, y);
     r.nb_finaux = y.nb_finaux;
 
@@ -610,17 +608,18 @@ sAutoNDE Kleene(const sAutoNDE& x){
     sAutoNDE r = x;
 
     r.nb_etats += 1; // ajoute un nouvel état devant l'automate
-    r.trans.resize(r.nb_etats); // redimension au cas ou il y a réutilisation après
-    r.trans[r.nb_etats-1].resize(r.nb_symbs);
-    r.epsilon.resize(r.nb_etats);
-    r.epsilon[r.nb_etats-1].insert(x.initial);
     r.initial = r.nb_etats-1;
+    r.trans.resize(r.nb_etats); // redimension au cas ou il y a réutilisation après
+    r.trans[r.initial].resize(r.nb_symbs);
+    r.epsilon.resize(r.nb_etats);
+    r.epsilon[r.initial].insert(x.initial);
+    r.finaux.clear();
     r.finaux.insert(r.nb_etats-1);
 	r.nb_finaux = r.finaux.size();
 
     // ajoute les transitions permetant de revenir des états finaux à l'état initial de x
     for(etatset_t::iterator it = x.finaux.begin(); it != x.finaux.end(); it++){
-        r.epsilon[*it].insert(x.initial);
+        r.epsilon[*it].insert(r.initial);
     }
 
     return r;
@@ -628,16 +627,14 @@ sAutoNDE Kleene(const sAutoNDE& x){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Intersection avec la loi de De Morgan
 sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y){
     sAutoNDE r;
     r = Union(Complement(x), Complement(y));
-    return Complement(r); // La loi de Morgan : r = non(nonX U nonY)
+    return Complement(r); // la loi de Morgan : r = non(nonX U nonY)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Intersection avec l'automate produit
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
     sAutoNDE r;
     r.nb_etats = x.nb_etats * y.nb_etats;
@@ -720,7 +717,83 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// On utilise les principes de l'algoritme de Moore
+bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max) {
+    unsigned int nbSymb = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
+    string word = "";
+    cout << "Generation des mots de longueur 0... ";
+    for(unsigned int i=0; word.size() <= word_size_max; i++){
+        bool res1 = Accept(a1, word);
+        bool res2 = Accept(a2, word);
+        
+        if(res1 != res2){ // si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
+            cout << "Le mot \"" << word << "\" " << ((res1)? "est": "n'est pas") << " accepte par le premier automate et " << ((res2)? "l'ai": "pas") << " par le second" << endl;
+            return false;
+        }
+        
+        int j;
+        for(j=word.size()-1; j >= 0 && (word[j] - ASCII_A)+1 >= nbSymb;j--){
+            word[j] = ASCII_A;
+        }
+        
+        if(j < 0){
+            cout << "Tous les mots de longueur " << word.size() << " sont acceptes ou refuses par les deux automates" << endl;
+            if(word.size() < word_size_max){ // si dernier tour de boucle
+                cout << "Generation des mots de longueur " << word.size()+1 << "... ";
+            }
+            word += ASCII_A;
+        }
+        else{
+            word[j]++;
+        }
+    }
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
+    //~ if(!EstDeterministe(a1) || !EstDeterministe(a2)){
+        //~ cout << "Equivalence : Attention, les automates entres doivent etre deterministes" << endl;
+        //~ return false;
+    //~ }
+//~ 
+    //~ if(a1.nb_symbs != a2.nb_symbs){
+        //~ return false;
+    //~ }
+    //~ if(a1.nb_etats != a2.nb_etats){
+        //~ return false;
+    //~ }
+    //~ if(a1.nb_finaux != a2.nb_finaux){
+        //~ return false;
+    //~ }
+    //~ map<etat_t, etat_t> correspA1, correspA2;
+//~ 
+    //~ etatset_t tmpLsEtat;
+    //~ tmpLsEtat.insert(a1.initial);
+    //~ correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial));
+    //~ correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial));
+    //~ int dd = 0;
+    //~ while(dd < 5){
+        //~ for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
+            //~ a1.trans[*it][sym].begin()
+        //~ }
+//~ 
+//~ 
+        //~ dd++;
+    //~ }
+//~ 
+//~ //    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
+//~ //    for(int i=0; i < a1.nb_etats; i++){
+//~ //        for(int j=0; j < nbSym; j++){
+//~ //
+//~ //        }
+//~ //    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE r;
     sAutoNDE nwAuto; // Automate at transformé s'il est non déterministe
@@ -739,8 +812,6 @@ sAutoNDE Minimize(const sAutoNDE& at){
             first.insert(i);
         }
     }
-
-
 
     if(!first.empty()){
         equiCl.push_back(first); // Ajoute la classe des non finaux
@@ -815,15 +886,15 @@ sAutoNDE Minimize(const sAutoNDE& at){
     r.nb_etats = equiCl.size();
     r.epsilon.resize(r.nb_etats); // Utile si on fait des opérations sur cet automate par la suite
     r.trans.resize(r.nb_etats);
-    for(int i=0; i < r.nb_etats; i++){
+    for(size_t i=0; i < r.nb_etats; i++){
         r.trans[i].resize(nwAuto.nb_symbs);
     }
 
-    for(int i=0; i < equiCl.size(); i++){
+    for(size_t i=0; i < equiCl.size(); i++){
         etatset_t::iterator fState = equiCl[i].begin(); // fState : premier état de la classe
-        for(int symb=0; symb < nwAuto.nb_symbs; symb++){
+        for(size_t symb=0; symb < nwAuto.nb_symbs; symb++){
             etatset_t::iterator arrState = nwAuto.trans[*fState][symb].begin(); // L'état d'arrivé en fonction de l'état fState et du symbole symb
-            for(int j=0; j < equiCl.size(); j++){
+            for(size_t j=0; j < equiCl.size(); j++){
                 if(equiCl[j].find(*arrState) != equiCl[j].end()){
                     r.trans[i][symb].insert(j); // i numéro état de départ, j numéro état d'arrivée
                     break;
@@ -847,130 +918,50 @@ sAutoNDE Minimize(const sAutoNDE& at){
     return r;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-
-// détermine la pseudo équivalence par comparaison de tous les mots de Sigma* de longueur < à word_size_max
-bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max) {
-    unsigned int nbSymb = ((a1.nb_symbs > a2.nb_symbs)? a1.nb_symbs : a2.nb_symbs);
-    string word = "";
-    cout << "Generation des mots de longueur 0... ";
-    for(unsigned int i=0; word.size() <= word_size_max; i++){
-        bool res1 = Accept(a1, word);
-        bool res2 = Accept(a2, word);
-        if(res1 != res2){ // Si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
-            cout << "Le mot \"" << word << "\" " << ((res1)? "est": "n'est pas") << " accepte par le premier automate et " << ((res2)? "l'ai": "pas") << " par le second" << endl;
-            return false;
-        }
-        int j;
-        for(j=word.size()-1; j >= 0 && (word[j] - ASCII_A)+1 >= nbSymb;j--){
-            word[j] = ASCII_A;
-        }
-        if(j < 0){
-            cout << "Tous les mots de longueur " << word.size() << " sont acceptes ou refuses par les deux automates" << endl;
-            if(word.size() < word_size_max){ // Si dernier tour de boucle
-                cout << "Generation des mots de longueur " << word.size()+1 << "... ";
-            }
-            word += ASCII_A;
-        }
-        else{
-            word[j]++;
-        }
-
-    }
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-// détermine l'équivalence par "égalité" des automates :
-//   - même nombre d'états
-//   - même état initial
-//   - mêmes états finaux
-//   - même table de transition
-// à un renommage des états près
-bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
-    if(!EstDeterministe(a1) || !EstDeterministe(a2)){
-        cout << "Equivalence : Attention, les automates entres doivent etre deterministes" << endl;
-        return false;
-    }
-
-    if(a1.nb_symbs != a2.nb_symbs){
-        return false;
-    }
-    if(a1.nb_etats != a2.nb_etats){
-        return false;
-    }
-    if(a1.nb_finaux != a2.nb_finaux){
-        return false;
-    }
-    map<etat_t, etat_t> correspA1, correspA2;
-
-    etatset_t tmpLsEtat;
-    tmpLsEtat.insert(a1.initial);
-    correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial));
-    correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial));
-    int dd = 0;
-    while(dd < 5){
-        for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
-            a1.trans[*it][sym].begin()
-        }
-
-
-        dd++;
-    }
-
-//    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
-//    for(int i=0; i < a1.nb_etats; i++){
-//        for(int j=0; j < nbSym; j++){
-//
-//        }
-//    }
-
-    return true;
-}
-
 
 bool ToGraph(sAutoNDE& at, string path){
-    ofstream file(path.c_str(), ios::out | ios::trunc);
-    if(!file){
-        return false;
-    }
-    file << "digraph finite_state_machine {" << endl;
-    file << "\trankdir=LR;" << endl;
-    file << "\tsize=\"10,10\"" << endl << endl;
-    file << "\tnode [shape = doublecircle]; ";
-    for(etatset_t::iterator it = at.finaux.begin(); it != at.finaux.end(); it++){
-         file << *it << " ";
-    }
-    file << ";"<< endl << "\tnode [shape = point ]; q;" << endl;
-    file << "\tnode [shape = circle];" << endl << endl;
-    file << "\tq -> " << at.initial << endl;
+	ofstream file(path.c_str(), ios::out | ios::trunc);
+	if(!file){
+		return false;
+	}
+	file << "digraph finite_state_machine {" << endl;
+	file << "\trankdir=LR;" << endl;
+	file << "\tsize=\"10,10\"" << endl << endl;
+	file << "\tnode [shape = doublecircle]; ";
+	for(etatset_t::iterator it = at.finaux.begin(); it != at.finaux.end(); it++){
+		 file << *it << " ";
+	}
+	file << ";"<< endl << "\tnode [shape = point ]; q;" << endl;
+	file << "\tnode [shape = circle];" << endl << endl;
+	file << "\tq -> " << at.initial << endl;
 
-    for(size_t i=0; i < at.trans.size(); i++){
-        for(size_t j=0; j < at.trans[i].size(); j++){
-            for(etatset_t::iterator itSet = at.trans[i][j].begin(); itSet != at.trans[i][j].end(); itSet++){
-                file << "\t" << i << " -> " <<  *itSet << " [label = \"" << (char)(j+ASCII_A) << "\"];" << endl;
-            }
-        }
-    }
-    file << endl;
-    for(size_t i=0; i < at.epsilon.size(); i++){
-        for(etatset_t::iterator itSet = at.epsilon[i].begin(); itSet != at.epsilon[i].end(); itSet++){
-            file << "\t" << i << " -> " <<  *itSet << " [label = \"ε\"];" << endl;
-        }
-    }
-    file << "}";
-    file.close();
+	for(size_t i=0; i < at.trans.size(); i++){
+		for(size_t j=0; j < at.trans[i].size(); j++){
+			for(etatset_t::iterator itSet = at.trans[i][j].begin(); itSet != at.trans[i][j].end(); itSet++){
+				file << "\t" << i << " -> " <<  *itSet << " [label = \"" << (char)(j+ASCII_A) << "\"];" << endl;
+			}
+		}
+	}
+	file << endl;
+	for(size_t i=0; i < at.epsilon.size(); i++){
+		for(etatset_t::iterator itSet = at.epsilon[i].begin(); itSet != at.epsilon[i].end(); itSet++){
+			file << "\t" << i << " -> " <<  *itSet << " [label = \"ε\"];" << endl;
+		}
+	}
+	file << "}";
+	file.close();
 
-  return true;
+	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
 bool ToJflap(sAutoNDE& at, string path){
+	const int decalage = 100;
     TiXmlDocument doc;
 	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "UTF-8", "no" );
-	doc.LinkEndChild( decl );
+	doc.LinkEndChild(decl);
 
 	TiXmlElement * elStructure = new TiXmlElement("structure");
 	doc.LinkEndChild(elStructure);
@@ -983,8 +974,11 @@ bool ToJflap(sAutoNDE& at, string path){
     TiXmlElement * elAutomaton = new TiXmlElement("automaton");
     elStructure->LinkEndChild(elAutomaton);
 
-    // Ajoute les états
+    // ajoute les états
     for(size_t i=0; i < at.nb_etats; i++){
+		ostringstream x, y;
+		x << ((i + 1) / 2) * decalage;
+		y << (i / 2) * decalage;
         TiXmlElement * elState = new TiXmlElement("state");
         stringstream intToStr;
         intToStr << "q" << i;
@@ -993,11 +987,11 @@ bool ToJflap(sAutoNDE& at, string path){
         elAutomaton->LinkEndChild(elState);
         TiXmlElement * elX = new TiXmlElement("x");
         elState->LinkEndChild(elX);
-        TiXmlText * txtX = new TiXmlText("0");
+        TiXmlText * txtX = new TiXmlText(x.str().c_str());
         elX->LinkEndChild(txtX);
         TiXmlElement * elY = new TiXmlElement("y");
         elState->LinkEndChild(elY);
-        TiXmlText * txtY = new TiXmlText("0");
+        TiXmlText * txtY = new TiXmlText(y.str().c_str());
         elY->LinkEndChild(txtY);
         if(i == at.initial){
             TiXmlElement * elInitial = new TiXmlElement("initial");
@@ -1009,7 +1003,7 @@ bool ToJflap(sAutoNDE& at, string path){
         }
     }
 
-    // Ajoute les transitions
+    // ajoute les transitions
     for(size_t i=0; i < at.nb_etats; i++){
         for(size_t symb=0; symb < at.nb_symbs; symb++){
             if(!at.trans[i][symb].empty()){
@@ -1038,7 +1032,7 @@ bool ToJflap(sAutoNDE& at, string path){
             }
         }
 
-        // Ajoute les epsilon transitions
+        // ajoute les epsilon transitions
         if(!at.epsilon[i].empty()){
             for(etatset_t::iterator it = at.epsilon[i].begin(); it != at.epsilon[i].end(); it++){
                 stringstream intToStr;
@@ -1062,8 +1056,6 @@ bool ToJflap(sAutoNDE& at, string path){
         }
 
     }
-
-
 
 	doc.SaveFile(path.c_str()); // Libère tout seul la mémoire
 

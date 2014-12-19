@@ -39,6 +39,10 @@ int main(int argc, char* argv[] ){
     ToJflap(r, "res.jff");
     //cout << r << endl;
 
+
+
+
+
     //test();
 //    if(argc < 3){
 //        Help(cout, argv[0]);
@@ -282,46 +286,89 @@ void Help(ostream& out, char *s){
 
 // appelé lorsque 'test' est passé en paramètre au programme
 void test(){
-	int nbAutomate = 19;
-	string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
-
-	for (int i = 0; i < nbAutomate; i++){
-		sAutoNDE automateTXT, automateJFF;
-
-		FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
-		FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
-
-		system("clear");
-		cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
-		cout << "==> TXT" << automateTXT << endl;
-        cout << "==> JFF" << automateJFF << endl;
-
-		etatset_t cf;
-		cf.insert(1);
-		cf.insert(0);
-		cout << "==> ContientFinal " << cf << " : " << ((ContientFinal(automateTXT, cf))? "Oui" : "Non") << endl;
-
-		cout << "==> Deterministe : " << ((EstDeterministe(automateTXT))? "Oui" : "Non") << endl;
-
-		cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-
-		cout << "==> Accepte" << endl;
-		cout << "\taba : " << Accept(automateTXT, "aba") << endl;
-		cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
-		cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
-		cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
-
-		etatset_t f;
-		f.insert(1);
-		f.insert(2);
-		cout << "==> Fermeture " << f <<  " : ";
-		Fermeture(automateTXT, f);
-		cout << f <<  endl;
-        cout << "==> Deterministation : " << endl;
-		sAutoNDE automateDeterminise = Determinize(automateTXT);
-		cout << "==> Determinise : " << ((EstDeterministe(automateDeterminise))? "Oui" : "Non")<< endl;
-
-        cout << endl << "Appuyez sur entrer pour continuer..." << endl;
-		while(getchar() != '\n');
-	}
+	//~ int nbAutomate = 19;
+	//~ string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
+//~ 
+	//~ for (int i = 0; i < nbAutomate; i++){
+		//~ sAutoNDE automateA, automateB, result;
+		//~ ostringstream oss;
+		//~ oss << "/home/paturaux/Bureau/Partage/test/" << i << "_" << listeAutomate[i] << ".jff";
+		//~ 
+		//~ cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
+		//~ FromFile(automateA, "exemples/" + listeAutomate[i] + ".jff");
+		//~ FromFile(automateB, "exemples/" + listeAutomate[i+1] + ".txt");
+		//~ 
+		//~ result = Minimize(automateA);
+		//~ cout << automateA << endl;
+		//~ cout << result << endl;
+		//~ ToJflap(result, oss.str());
+		//~ while(getchar() != '\n');
+	//~ }
+	//~ sAutoNDE automateA, automateB, result;
+	//~ FromFile(automateB, "exemples/" + listeAutomate[18] + ".jff");
+	//~ FromFile(automateA, "exemples/" + listeAutomate[18] + ".jff");
+//~ 
+		//~ cout << PseudoEquivalent(automateA, automateB, 3);
+	//~ result = Concat(automateA, automateB);
+	//~ cout << result << endl;
+	//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/19.jff");
+	
+		//~ sAutoNDE automateA, automateB, result, a;
+		//~ FromFile(automateA, "exemples/automate_ND_ex5.jff");
+		//~ FromFile(automateB, "exemples/automate_ND_ex6.jff");
+//~ 
+		//~ result = Intersection(automateA, automateB);
+		//~ cout << result << endl;
+		//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/xxx.jff");
+	//~ 
+	//~ 
+		//~ FromFile(a, "exemples/automate_ND_ex5.jff");
+	//~ cout << "##############" <<Determinize(a);
+	
+	
+	
+	
+	
+	
+	
+	
+	//~ for (int i = 0; i < nbAutomate; i++){
+		//~ sAutoNDE automateTXT, automateJFF;
+//~ 
+		//~ FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
+		//~ FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
+//~ 
+		//~ system("clear");
+		//~ cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
+		//~ cout << "==> TXT" << automateTXT << endl;
+        //~ cout << "==> JFF" << automateJFF << endl;
+//~ 
+		//~ etatset_t cf;
+		//~ cf.insert(1);
+		//~ cf.insert(0);
+		//~ cout << "==> ContientFinal " << cf << " : " << ((ContientFinal(automateTXT, cf))? "Oui" : "Non") << endl;
+//~ 
+		//~ cout << "==> Deterministe : " << ((EstDeterministe(automateTXT))? "Oui" : "Non") << endl;
+//~ 
+		//~ cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
+//~ 
+		//~ cout << "==> Accepte" << endl;
+		//~ cout << "\taba : " << Accept(automateTXT, "aba") << endl;
+		//~ cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
+		//~ cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
+		//~ cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
+//~ 
+		//~ etatset_t f;
+		//~ f.insert(1);
+		//~ f.insert(2);
+		//~ cout << "==> Fermeture " << f <<  " : ";
+		//~ Fermeture(automateTXT, f);
+		//~ cout << f <<  endl;
+        //~ cout << "==> Deterministation : " << endl;
+		//~ sAutoNDE automateDeterminise = Determinize(automateTXT);
+		//~ cout << "==> Determinise : " << ((EstDeterministe(automateDeterminise))? "Oui" : "Non")<< endl;
+//~ 
+        //~ cout << endl << "Appuyez sur entrer pour continuer..." << endl;
+		//~ while(getchar() != '\n');
+	//~ }
 }

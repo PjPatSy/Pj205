@@ -122,22 +122,30 @@ sAutoNDE Kleene(const sAutoNDE& x);
 // calcule l'intersection des deux automates par application de la loi de Do Morgan
 sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y);
 
-// calcule l'intersection des deux automates produit d'automates
+// calcule l'intersection des deux automates par produit d'automates
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 
 // -----------------------------------------------------------------------------
 // COMPARAISON D'AUTOMATES
 // -----------------------------------------------------------------------------
 
+// détermine la pseudo équivalence par comparaison de tous les mots de longueur < à word_size_max
 bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_size_max);
+
+// détermine l'équivalence par "égalité" des automates
 bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2);
+
+// minimise un automate avec l'algorythme de Moore
 sAutoNDE Minimize(const sAutoNDE& at);
 
 // -----------------------------------------------------------------------------
 // SERIALISATION D'AUTOMATE
 // -----------------------------------------------------------------------------
 
+// enregistre un automate dans un fichier au format Graphviz
 bool ToGraph(sAutoNDE& at, string path);
+
+// enregistre un automate dans un fichier au format Jflap
 bool ToJflap(sAutoNDE& at, string path);
 
 #endif
