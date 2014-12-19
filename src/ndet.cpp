@@ -906,8 +906,19 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     }
     map<etat_t, etat_t> correspA1, correspA2;
 
+    etatset_t tmpLsEtat;
+    tmpLsEtat.insert(a1.initial);
+    correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial));
+    correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial));
+    int dd = 0;
+    while(dd < 5){
+        for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
+            a1.trans[*it][sym].begin()
+        }
 
 
+        dd++;
+    }
 
 //    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
 //    for(int i=0; i < a1.nb_etats; i++){
