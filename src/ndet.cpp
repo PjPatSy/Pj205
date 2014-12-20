@@ -613,13 +613,12 @@ sAutoNDE Kleene(const sAutoNDE& x){
     r.trans[r.initial].resize(r.nb_symbs);
     r.epsilon.resize(r.nb_etats);
     r.epsilon[r.initial].insert(x.initial);
-    r.finaux.clear();
     r.finaux.insert(r.nb_etats-1);
 	r.nb_finaux = r.finaux.size();
 
     // ajoute les transitions permetant de revenir des états finaux à l'état initial de x
     for(etatset_t::iterator it = x.finaux.begin(); it != x.finaux.end(); it++){
-        r.epsilon[*it].insert(r.initial);
+        r.epsilon[*it].insert(x.initial);
     }
 
     return r;
@@ -724,17 +723,17 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
     for(unsigned int i=0; word.size() <= word_size_max; i++){
         bool res1 = Accept(a1, word);
         bool res2 = Accept(a2, word);
-        
+
         if(res1 != res2){ // si un des 2 automates accèpte et l'autre non (non pseudo equivalent)
             cout << "Le mot \"" << word << "\" " << ((res1)? "est": "n'est pas") << " accepte par le premier automate et " << ((res2)? "l'ai": "pas") << " par le second" << endl;
             return false;
         }
-        
+
         int j;
         for(j=word.size()-1; j >= 0 && (word[j] - ASCII_A)+1 >= nbSymb;j--){
             word[j] = ASCII_A;
         }
-        
+
         if(j < 0){
             cout << "Tous les mots de longueur " << word.size() << " sont acceptes ou refuses par les deux automates" << endl;
             if(word.size() < word_size_max){ // si dernier tour de boucle
@@ -752,42 +751,57 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
 ////////////////////////////////////////////////////////////////////////////////
 
 bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
-    //~ if(!EstDeterministe(a1) || !EstDeterministe(a2)){
-        //~ cout << "Equivalence : Attention, les automates entres doivent etre deterministes" << endl;
-        //~ return false;
-    //~ }
-//~ 
-    //~ if(a1.nb_symbs != a2.nb_symbs){
-        //~ return false;
-    //~ }
-    //~ if(a1.nb_etats != a2.nb_etats){
-        //~ return false;
-    //~ }
-    //~ if(a1.nb_finaux != a2.nb_finaux){
-        //~ return false;
-    //~ }
-    //~ map<etat_t, etat_t> correspA1, correspA2;
-//~ 
-    //~ etatset_t tmpLsEtat;
-    //~ tmpLsEtat.insert(a1.initial);
-    //~ correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial));
-    //~ correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial));
-    //~ int dd = 0;
-    //~ while(dd < 5){
-        //~ for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
-            //~ a1.trans[*it][sym].begin()
-        //~ }
-//~ 
-//~ 
-        //~ dd++;
-    //~ }
-//~ 
-//~ //    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
-//~ //    for(int i=0; i < a1.nb_etats; i++){
-//~ //        for(int j=0; j < nbSym; j++){
-//~ //
-//~ //        }
-//~ //    }
+    if(!EstDeterministe(a1) || !EstDeterministe(a2)){
+        cout << "Equivalence : Attention, les automates entres doivent etre deterministes" << endl;
+        return false;
+    }
+
+    if(a1.nb_symbs != a2.nb_symbs){
+        return false;
+    }
+    if(a1.nb_etats != a2.nb_etats){
+        return false;
+    }
+    if(a1.nb_finaux != a2.nb_finaux){
+        return false;
+    }
+    map<etat_t, etat_t> correspA1, correspA2;
+
+    etatset_t tmpLsEtat;
+    etatset_t tmpLsEtat2;
+    tmpLsEtat.insert(a1.initial);
+
+    //correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial));
+    //correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial));
+    int dd = 0;
+    while(dd < 5){
+        tmpLsEtat2.clear();
+        for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
+            for(int sym=0; sym < a1.nb_symbs; sym++){
+                etat_t tmpEtatA1 = *(a1.trans[*it][sym].begin());
+                etat_t tmpEtatA2 = *(a2.trans[*it][sym].begin());
+                map<etat_t, etat_t>::iterator res = correspA1.find(tmpEtatA1);
+                if(res == correspA1.end()){
+                    correspA1.insert(pair<etat_t, etat_t>(tmpEtatA1, tmpEtatA2));
+                }
+                else{
+
+                }
+            }
+
+        }
+
+
+        dd++;
+    }
+
+//    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
+//    for(int i=0; i < a1.nb_etats; i++){
+//        for(int j=0; j < nbSym; j++){
+//
+//        }
+//    }
+
 
     return true;
 }

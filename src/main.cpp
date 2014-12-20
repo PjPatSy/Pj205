@@ -7,7 +7,7 @@ int main(int argc, char* argv[] ){
     sAutoNDE a, b;
     sAutoNDE r;
 
-    if(!FromFile(a, "ex2.jff")){
+    if(!FromFile(a, "ex3.jff")){
         cout << "faux 1" << endl;
     }
     if(!FromFile(b, "exemples/automate_ND_ex6.jff")){
@@ -17,8 +17,9 @@ int main(int argc, char* argv[] ){
     //~ cout << "A : " << a << endl;
     //~ cout << "B : " << b << endl;
     //r = Produit(b, a);
-    PseudoEquivalent(a, a, 10);
-    r = Minimize(a);
+    //PseudoEquivalent(a, a, 10);
+
+    //r = Minimize(a);
     //cout << "R : " << r << endl;
 
     //ToGraph(b, "test.gv");
@@ -27,7 +28,8 @@ int main(int argc, char* argv[] ){
     //r = Union(a, b);
     //r = Concat(a,b);
     //r = Complement(b);
-    //r = Kleene(b);
+    r = Kleene(a);
+    cout << "R : " << r << endl;
     //r = Intersection(a, b);
 //    if(PseudoEquivalent(r,a, 1000)){
 //        cout << "Ils sont equivalents..." << endl;
@@ -293,11 +295,11 @@ void test(){
 		//~ sAutoNDE automateA, automateB, result;
 		//~ ostringstream oss;
 		//~ oss << "/home/paturaux/Bureau/Partage/test/" << i << "_" << listeAutomate[i] << ".jff";
-		//~ 
+		//~
 		//~ cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
 		//~ FromFile(automateA, "exemples/" + listeAutomate[i] + ".jff");
 		//~ FromFile(automateB, "exemples/" + listeAutomate[i+1] + ".txt");
-		//~ 
+		//~
 		//~ result = Minimize(automateA);
 		//~ cout << automateA << endl;
 		//~ cout << result << endl;
@@ -307,16 +309,16 @@ void test(){
 	//~ sAutoNDE automateA, automateB, result;
 	//~ FromFile(automateB, "exemples/" + listeAutomate[18] + ".jff");
 	//~ FromFile(automateA, "exemples/" + listeAutomate[18] + ".jff");
-//~ 
+//~
 		//~ cout << PseudoEquivalent(automateA, automateB, 3);
 	//~ result = Concat(automateA, automateB);
 	//~ cout << result << endl;
 	//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/19.jff");
-	//~ 
-	
-	
-	
-	
+	//~
+
+
+
+
 		//~ sAutoNDE automateA, automateB, result, a, b;
 		//~ FromFile(automateA, "exemples/automate_ND_ex5.txt");
 		//~ FromFile(automateB, "exemples/automate_ND_ex6.txt");
@@ -333,39 +335,39 @@ void test(){
 		//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/det.jff");
 		//~ result = Intersection(automateA, automateB);
 		//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/inter.jff");
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
 	//~ for (int i = 0; i < nbAutomate; i++){
 		//~ sAutoNDE automateTXT, automateJFF;
-//~ 
+//~
 		//~ FromFile(automateTXT, "exemples/" + listeAutomate[i] + ".txt");
 		//~ FromFile(automateJFF, "exemples/" + listeAutomate[i] + ".jff");
-//~ 
+//~
 		//~ system("clear");
 		//~ cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
 		//~ cout << "==> TXT" << automateTXT << endl;
         //~ cout << "==> JFF" << automateJFF << endl;
-//~ 
+//~
 		//~ etatset_t cf;
 		//~ cf.insert(1);
 		//~ cf.insert(0);
 		//~ cout << "==> ContientFinal " << cf << " : " << ((ContientFinal(automateTXT, cf))? "Oui" : "Non") << endl;
-//~ 
+//~
 		//~ cout << "==> Deterministe : " << ((EstDeterministe(automateTXT))? "Oui" : "Non") << endl;
-//~ 
+//~
 		//~ cout << "==> Delta(" << automateTXT.finaux << ", a) = " << Delta(automateTXT, automateTXT.finaux, 'a') << endl;
-//~ 
+//~
 		//~ cout << "==> Accepte" << endl;
 		//~ cout << "\taba : " << Accept(automateTXT, "aba") << endl;
 		//~ cout << "\taaa : " << Accept(automateTXT, "aaa") << endl;
 		//~ cout << "\tbbb : " << Accept(automateTXT, "bbb") << endl;
 		//~ cout << "\tabb : " << Accept(automateTXT, "abb") << endl;
-//~ 
+//~
 		//~ etatset_t f;
 		//~ f.insert(1);
 		//~ f.insert(2);
@@ -375,7 +377,7 @@ void test(){
         //~ cout << "==> Deterministation : " << endl;
 		//~ sAutoNDE automateDeterminise = Determinize(automateTXT);
 		//~ cout << "==> Determinise : " << ((EstDeterministe(automateDeterminise))? "Oui" : "Non")<< endl;
-//~ 
+//~
         //~ cout << endl << "Appuyez sur entrer pour continuer..." << endl;
 		//~ while(getchar() != '\n');
 	//~ }
