@@ -319,8 +319,8 @@ sAutoNDE Determinize(const sAutoNDE& at){
     sAutoNDE rAutoD; // automate déterminisé
 
     if(!EstDeterministe(at)){
-        map_t corespEtat; // fait la correspondance entre le numéro d'état dans rAutoD, et sa les états qu'il représente dans at
-        map_t fermeture; // Pas très utile, seulement pour l'affichage (Pas obligatoire)
+        map_t corespEtat; // fait la correspondance entre le numéro d'état dans rAutoD, et les états qu'il représente dans at
+        map_t fermeture; // pas très utile, seulement pour l'affichage (Pas obligatoire)
         rAutoD.nb_symbs = at.nb_symbs;
         rAutoD.nb_finaux = 0;
 
@@ -421,7 +421,7 @@ sAutoNDE Determinize(const sAutoNDE& at){
 
         cout << endl << "Nouvelles transitions : " << endl;
         cout << str << endl; // affiche les transitions
-        rAutoD.epsilon.resize(rAutoD.nb_etats); // Prend de la place, mais simplifie s'il faut faire des oprérations sur les epsilon après
+        rAutoD.epsilon.resize(rAutoD.nb_etats); // prend de la place, mais simplifie s'il faut faire des oprérations sur les epsilon après
         return rAutoD;
     }
     cout << "L'automate est deja deterministe." << endl;
@@ -639,7 +639,7 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
     sAutoNDE r;
     r.nb_etats = x.nb_etats * y.nb_etats;
     r.nb_symbs = ((x.nb_symbs > y.nb_symbs)? y.nb_symbs : x.nb_symbs);
-    map<pair<etat_t, etat_t>, etat_t> listNwStates; // Les nouveaux états du produit
+    map<pair<etat_t, etat_t>, etat_t> listNwStates; // les nouveaux états du produit
 
     r.epsilon.resize(r.nb_etats);
     r.trans.resize(r.nb_etats);
@@ -651,12 +651,12 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
     for(size_t i=0; i < y.nb_etats; i++){
         for(size_t j=0; j < x.nb_etats; j++){
             pair<map<pair<etat_t, etat_t>, etat_t>::iterator , bool> res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(j, i), listNwStates.size()));
-            etat_t etatDep = res.first->second; // Le numéro de l'état de départ
-            if(res.second){ // Si c'est un nouvel état
-                if(x.initial == j && y.initial == i){ // Etat initial, la pair contenant l'état initial de x et y
+            etat_t etatDep = res.first->second; // le numéro de l'état de départ
+            if(res.second){ // si c'est un nouvel état
+                if(x.initial == j && y.initial == i){ // etat initial, la pair contenant l'état initial de x et y
                     r.initial = etatDep;
                 }
-                if(x.finaux.find(j) != x.finaux.end()){ // Regarde si l'état de gauche est final dans x
+                if(x.finaux.find(j) != x.finaux.end()){ // regarde si l'état de gauche est final dans x
                     r.finaux.insert(etatDep);
                 }
             }
@@ -669,11 +669,11 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
                             res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size()));
                             etat_t etatArr = res.first->second; // res.first->second représente le numéro de l'état d'arrivée
                             r.trans[etatDep][symb].insert(etatArr);
-                            if(res.second){ // Si c'est un nouvel état
-                                if(x.initial == *itX && y.initial == *itY){ // Etat initial, la pair contenant l'état initial de x et y
+                            if(res.second){ // si c'est un nouvel état
+                                if(x.initial == *itX && y.initial == *itY){ // etat initial, la pair contenant l'état initial de x et y
                                     r.initial = etatArr;
                                 }
-                                if(y.finaux.find(*itY) != y.finaux.end()){ // On regarde si l'état de droite est final dans y
+                                if(y.finaux.find(*itY) != y.finaux.end()){ // on regarde si l'état de droite est final dans y
                                     r.finaux.insert(etatArr);
                                 }
                             }
@@ -690,11 +690,11 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
                             res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size()));
                             etat_t etatArr = res.first->second; // res.first->second représente le numéro de l'état d'arrivée
                             r.epsilon[etatDep].insert(etatArr);
-                            if(res.second){ // Si c'est un nouvel état
-                                if(x.initial == *itX && y.initial == *itY){ // Etat initial, la pair contenant l'état initial de x et y
+                            if(res.second){ // si c'est un nouvel état
+                                if(x.initial == *itX && y.initial == *itY){ // etat initial, la pair contenant l'état initial de x et y
                                     r.initial = etatArr;
                                 }
-                                if(y.finaux.find(*itY) != y.finaux.end()){ // On regarde si l'état de droite est final dans y
+                                if(y.finaux.find(*itY) != y.finaux.end()){ // on regarde si l'état de droite est final dans y
                                     r.finaux.insert(etatArr);
                                 }
                             }
