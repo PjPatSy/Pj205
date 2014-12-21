@@ -8,12 +8,25 @@ int main(int argc, char* argv[] ){
         test();
 		return EXIT_SUCCESS;
 	}
+	else{
+        sAutoNDE a, b, r;
+        FromFileJff(a, "ex4.jff");
+        FromFileJff(b, "ex5.jff");
+        a = Determinize(a);
+        b = Determinize(b);
+        //r = Determinize(a);
+        Equivalent(a, b);
+        //r = Minimize(a);
+        //cout << "Res : " << r << endl;
+        //ToJflap(r, "res.jff");
+        return EXIT_SUCCESS;
+	}
 
 	if(argc < 3){
 		Help(cout, argv[0]);
 		return EXIT_FAILURE;
 	}
-	
+
 	int pos;
 	int act=-1;                 // pos et act pour savoir quelle action effectuer
 	int nb_files = 0;           // nombre de fichiers en entrée
