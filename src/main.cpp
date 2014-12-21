@@ -226,23 +226,23 @@ int main(int argc, char* argv[] ){
 
 void Help(ostream& out, char *s){
 	out << "Utilisation du programme " << s << " :" << endl ;
-	out << "-acc ou -accept Input Word:\n\t détermine si le mot Word est accepté" << endl;
-	out << "-det ou -determinize Input :\n\t déterminise Input" << endl;
+	out << "-acc ou -accept Input Word:\n\t determine si le mot Word est accepté" << endl;
+	out << "-det ou -determinize Input :\n\t determinise Input" << endl;
 	out << "-cup ou -union Input1 Input2 :\n\t calcule l'union" << endl;
-	out << "-cat ou -concat Input1 Input2 :\n\t calcul la concaténation" << endl;
+	out << "-cat ou -concat Input1 Input2 :\n\t calcul la concatenation" << endl;
 	out << "-star ou -kleene Input :\n\t calcul de A*" << endl;
-	out << "-bar ou -complement Input :\n\t calcul du complément" << endl;
+	out << "-bar ou -complement Input :\n\t calcul du complement" << endl;
 	out << "-cap ou -intersection Input1 Input2 :\n\t calcul de l'intersection par la loi de De Morgan" << endl;
 	out << "-prod ou -produit Input1 Input2 :\n\t calcul de l'intersection par construction de l'automate produit" << endl;
 	/*
 	out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
 	*/
-	out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant à Input" << endl;
+	out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant a Input" << endl;
 	out << "-pequ ou -pseudo_equivalent Input1 Input2 size :\n\t équivalence d'automates par comparaison mot par mot de longueur < à size" << endl;
-	out << "-equ ou -equivalent Input1 Input2 :\n\t équivalence d'automates par minimisation et comparaison des tables de transition" << endl;
+	out << "-equ ou -equivalent Input1 Input2 :\n\t equivalence d'automates par minimisation et comparaison des tables de transition" << endl;
 	out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
 
-	out << "-o ou -output Output :\n\t écrire le résultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
+	out << "-o ou -output Output :\n\t ecrire le resultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
 	out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
 
 	out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;

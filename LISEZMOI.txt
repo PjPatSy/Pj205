@@ -9,28 +9,21 @@ PATURAUX	Florian		11201780
 Contenu de l'archive
 --------------------
 
-LISEZMOI.txt	ce fichier
-Makefile		cibles  all, ndet, clean et cleanparser
-exemples/		exemples d'automates : D = Déterministe, ND = Non Déterministe,
-							NDE = Non Déterministe avec transitions spontanées
-src/ndet.cpp	implémentation des fonctions concerant les automates
-src/ndet.h		entête des fonctions concerant les automates
-src/main.cpp	lanceur du projet et des testes
-src/tinyxml/*	bibliothèque permettant de parser les fichier JFF
+LISEZMOI.txt		ce fichier
+Makefile			cibles  all, ndet, clean et cleanparser
+exemples/			exemples d'automates : D = Déterministe, ND = Non Déterministe,
+						NDE = Non Déterministe avec transitions spontanées
+exemples/gv2png.sh	convertit tous les fichier .gv en .png
+src/ndet.cpp		implémentation des fonctions concerant les automates
+src/ndet.h			entête des fonctions concerant les automates
+src/main.cpp		lanceur du projet et des testes
+src/tinyxml/*		bibliothèque permettant de parser les fichier JFF
 
 
 
 Commentaires
 ------------
 
-On a de nombreux avertissements de la forme suivante :
-	* ndet.cpp:125:6: warning: unused parameter ‘at’ [-Wunused-parameter]
- 
-C'est normal car le corps des fonctions de la partie 2 sont encore vides.
-Les avertissements disparaîtront naturellement quand la fonction sera
-complètement définie. Les corps à compléter sont remarquable par le // TODO
-qu'ils contiennent.
-
 Le projet est en C++. 
 
-Pour lancer les testes : ./ndet test
+Pour lancer les testes de la première partie : ./ndet test
