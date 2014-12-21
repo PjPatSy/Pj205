@@ -1,74 +1,73 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><!--Created with JFLAP 6.4.--><structure>&#13;
-	<type>fa</type>&#13;
-	<automaton>&#13;
-		<!--The list of states.-->&#13;
-		<state id="0" name="q0">&#13;
-			<x>182.0</x>&#13;
-			<y>251.0</y>&#13;
-			<initial/>&#13;
-		</state>&#13;
-		<state id="1" name="q1">&#13;
-			<x>47.0</x>&#13;
-			<y>153.0</y>&#13;
-		</state>&#13;
-		<state id="2" name="q2">&#13;
-			<x>274.0</x>&#13;
-			<y>146.0</y>&#13;
-		</state>&#13;
-		<state id="3" name="q3">&#13;
-			<x>513.0</x>&#13;
-			<y>42.0</y>&#13;
-		</state>&#13;
-		<state id="4" name="q4">&#13;
-			<x>394.0</x>&#13;
-			<y>85.0</y>&#13;
-			<final/>&#13;
-		</state>&#13;
-		<!--The list of transitions.-->&#13;
-		<transition>&#13;
-			<from>1</from>&#13;
-			<to>0</to>&#13;
-			<read>a</read>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>0</from>&#13;
-			<to>1</to>&#13;
-			<read/>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>1</from>&#13;
-			<to>4</to>&#13;
-			<read>a</read>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>2</from>&#13;
-			<to>4</to>&#13;
-			<read>b</read>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>3</from>&#13;
-			<to>4</to>&#13;
-			<read>a</read>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>1</from>&#13;
-			<to>2</to>&#13;
-			<read/>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>4</from>&#13;
-			<to>3</to>&#13;
-			<read/>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>1</from>&#13;
-			<to>3</to>&#13;
-			<read/>&#13;
-		</transition>&#13;
-		<transition>&#13;
-			<from>0</from>&#13;
-			<to>2</to>&#13;
-			<read>b</read>&#13;
-		</transition>&#13;
-	</automaton>&#13;
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<structure>
+    <type>fa</type>
+    <automaton>
+        <state id="0" name="q0">
+            <x>0</x>
+            <y>0</y>
+            <initial />
+        </state>
+        <state id="1" name="q1">
+            <x>100</x>
+            <y>0</y>
+        </state>
+        <state id="2" name="q2">
+            <x>100</x>
+            <y>100</y>
+        </state>
+        <state id="3" name="q3">
+            <x>200</x>
+            <y>100</y>
+        </state>
+        <state id="4" name="q4">
+            <x>200</x>
+            <y>200</y>
+            <final />
+        </state>
+        <transition>
+            <from>0</from>
+            <to>2</to>
+            <read>b</read>
+        </transition>
+        <transition>
+            <from>0</from>
+            <to>1</to>
+            <read />
+        </transition>
+        <transition>
+            <from>1</from>
+            <to>0</to>
+            <read>a</read>
+        </transition>
+        <transition>
+            <from>1</from>
+            <to>4</to>
+            <read>a</read>
+        </transition>
+        <transition>
+            <from>1</from>
+            <to>2</to>
+            <read />
+        </transition>
+        <transition>
+            <from>1</from>
+            <to>3</to>
+            <read />
+        </transition>
+        <transition>
+            <from>2</from>
+            <to>4</to>
+            <read>b</read>
+        </transition>
+        <transition>
+            <from>3</from>
+            <to>4</to>
+            <read>a</read>
+        </transition>
+        <transition>
+            <from>4</from>
+            <to>3</to>
+            <read />
+        </transition>
+    </automaton>
 </structure>

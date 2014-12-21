@@ -767,11 +767,11 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     }
     map<etat_t, etat_t> correspA1, correspA2;
 
-    etatset_t tmpLsEtat; // Liste temporaire contenant tous les états à traiter
+    etatset_t tmpLsEtat; // liste temporaire contenant tous les états à traiter
     etatset_t tmpLsEtat2;
     tmpLsEtat.insert(a1.initial);
-    correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial)); // Correspondance entre les noms de l'automate 1 à 2
-    correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial)); // Correspondance entre les noms de l'automate 2 à 1
+    correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial)); // correspondance entre les noms de l'automate 1 à 2
+    correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial)); // correspondance entre les noms de l'automate 2 à 1
 
     do{
         tmpLsEtat2.clear();
@@ -780,8 +780,8 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
                 etat_t tmpEtatArrA1 = *(a1.trans[*it][sym].begin());
                 etat_t tmpEtatArrA2 = *(a2.trans[correspA1.find(*it)->second][sym].begin());
                 map<etat_t, etat_t>::iterator res = correspA1.find(tmpEtatArrA1);
-                if(res == correspA1.end()){ // Si on est jamais allé dans cet état
-                    // Si l'état actuel est déjà connu dans l'automate 2 alors qu'il ne l'ai pas dans l'automate 1
+                if(res == correspA1.end()){ // si on est jamais allé dans cet état
+                    // si l'état actuel est déjà connu dans l'automate 2 alors qu'il ne l'ai pas dans l'automate 1
                     if(correspA2.insert(pair<etat_t, etat_t>(tmpEtatArrA2, tmpEtatArrA1)).second == false){
                         cout << "Automate 1 : De l'etat " << res->second << " par '" << (char)(ASCII_A+sym) << "' ne correspond pas a l'automate 2." << endl;
                         return false;
@@ -790,13 +790,13 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
                     tmpLsEtat2.insert(tmpEtatArrA1);
                 }
                 else{
-                    if(res->second != tmpEtatArrA2){ // Si les états ne correspondent pas
+                    if(res->second != tmpEtatArrA2){ // si les états ne correspondent pas
                         cout << "Automate 1 : De l'etat " << res->second << " par '" << (char)(ASCII_A+sym) << "' ne correspond pas a l'automate 2." << endl;
                         return false;
                     }
                 }
             }
-            // Compare les états finaux
+            // compare les états finaux
             if((a1.finaux.find(*it) != a1.finaux.end()) != (a2.finaux.find(correspA1.find(*it)->second) != a2.finaux.end())){
                 cout << "Les etats finaux de l'automate 1 et l'automate 2 ne sont pas les memes : " << *it << endl;
                 return false;
@@ -814,11 +814,11 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
 
 sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE r;
-    sAutoNDE nwAuto; // Automate at transformé s'il est non déterministe
-    vector<etatset_t> equiCl; // Les classes d'équivalence
+    sAutoNDE nwAuto; // automate at transformé s'il est non déterministe
+    vector<etatset_t> equiCl; // les classes d'équivalence
 
     cout << "Minimize : " << endl;
-    if(!EstDeterministe(at)){ // S'il n'est pas déterministe, on le déterminise
+    if(!EstDeterministe(at)){ // s'il n'est pas déterministe, on le déterminise
         nwAuto = Determinize(at);
     }
     else{
@@ -826,18 +826,18 @@ sAutoNDE Minimize(const sAutoNDE& at){
     }
     etatset_t first;
     for(unsigned int i=0; i < nwAuto.nb_etats; i++){
-        if(nwAuto.finaux.find(i) == nwAuto.finaux.end()){ // Insert tous les états non finaux
+        if(nwAuto.finaux.find(i) == nwAuto.finaux.end()){ // insert tous les états non finaux
             first.insert(i);
         }
     }
 
     if(!first.empty()){
-        equiCl.push_back(first); // Ajoute la classe des non finaux
+        equiCl.push_back(first); // ajoute la classe des non finaux
     }
-    equiCl.push_back(nwAuto.finaux); // Ajoute la classe des finaux
+    equiCl.push_back(nwAuto.finaux); // ajoute la classe des finaux
     unsigned int nbEquiClPre; // Permetra de savoir s'il y a le même nombre de classe entre la liste des classes i et i-1
-    int nbClAdd; // Nombre de classes déjà ajoutées
-    int cpt = 0; // Sert juste pour l'affichage (Conpte le numéro d'équivalence qu'on fait)
+    int nbClAdd; // nombre de classes déjà ajoutées
+    int cpt = 0; // sert juste pour l'affichage (Conpte le numéro d'équivalence qu'on fait)
     do{
         nbClAdd = 0;
         cout << "Equivalence " << cpt << " : { ";
@@ -847,11 +847,11 @@ sAutoNDE Minimize(const sAutoNDE& at){
         }
         cout << "}" <<endl;
         nbEquiClPre = equiCl.size();
-        vector<etatset_t> nwListCl; // Les nouvelle classes crées à partir de la classe i
+        vector<etatset_t> nwListCl; // les nouvelle classes crées à partir de la classe i
         vector<int> listSingle; // contiendra la liste des indices des classes contenant un seul état, celle si ne peuvent être équivalentes à aucun état
 
         for(unsigned int i=0; i < equiCl.size(); i++){
-            int nbClAddForCl = 0; // Nombre de classes crées dans l'équivalence i pour une classe d'équivalence i-1
+            int nbClAddForCl = 0; // nombre de classes crées dans l'équivalence i pour une classe d'équivalence i-1
             if(equiCl[i].size() > 1){
                 for(etatset_t::iterator it = equiCl[i].begin(); it != equiCl[i].end(); it++){
                     bool etatAdd = false;
@@ -867,13 +867,13 @@ sAutoNDE Minimize(const sAutoNDE& at){
                                 break;
                             }
                         }
-                        if(symb >= nwAuto.nb_symbs){ // Si l'état appartient à cette classe (classe j)
+                        if(symb >= nwAuto.nb_symbs){ // si l'état appartient à cette classe (classe j)
                             nwListCl[j].insert(*it);
                             etatAdd = true;
                             break;
                         }
                     }
-                    if(!etatAdd){ // Ajoute une nouvelle classe
+                    if(!etatAdd){ // ajoute une nouvelle classe
                         etatset_t nwCl;
                         nwCl.insert(*it);
                         nwListCl.push_back(nwCl);
@@ -889,10 +889,10 @@ sAutoNDE Minimize(const sAutoNDE& at){
         }
         equiCl.clear();
         for(unsigned int j=0; j < listSingle.size(); j++){
-            nwListCl.push_back(equiCl[listSingle[j]]); // On rajoute les classe contenant un seul état
+            nwListCl.push_back(equiCl[listSingle[j]]); // on rajoute les classe contenant un seul état
         }
         equiCl = nwListCl;
-    }while(nbEquiClPre < equiCl.size()); // S'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
+    }while(nbEquiClPre < equiCl.size()); // s'il y a le même nombre de classe entre l'équivalence i et i-1 alors on ne peut pas en faire plus, on quitte
 
     cout << "Equivalence " << cpt << " : { ";
     for(unsigned int d=0; d < equiCl.size(); d++){
@@ -902,7 +902,7 @@ sAutoNDE Minimize(const sAutoNDE& at){
 
     r.nb_symbs = nwAuto.nb_symbs;
     r.nb_etats = equiCl.size();
-    r.epsilon.resize(r.nb_etats); // Utile si on fait des opérations sur cet automate par la suite
+    r.epsilon.resize(r.nb_etats); // utile si on fait des opérations sur cet automate par la suite
     r.trans.resize(r.nb_etats);
     for(size_t i=0; i < r.nb_etats; i++){
         r.trans[i].resize(nwAuto.nb_symbs);
@@ -919,7 +919,7 @@ sAutoNDE Minimize(const sAutoNDE& at){
                 }
             }
         }
-        // Ajoute les états finaux
+        // ajoute les états finaux
         for(etatset_t::iterator it = nwAuto.finaux.begin(); it != nwAuto.finaux.end(); it++){
             if(equiCl[i].find(*it) != equiCl[i].end()){
                 r.finaux.insert(i);

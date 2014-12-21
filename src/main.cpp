@@ -4,6 +4,7 @@ void test();
 void Help(ostream& out, char *s);
 
 int main(int argc, char* argv[] ){
+	//~ test();
     sAutoNDE a, b;
     sAutoNDE r;
 
@@ -14,8 +15,8 @@ int main(int argc, char* argv[] ){
         cout << "faux 2" << endl;
     }
 
-    //~ cout << "A : " << a << endl;
-    //~ cout << "B : " << b << endl;
+    cout << "A : " << a << endl;
+    cout << "B : " << b << endl;
     //r = Produit(b, a);
     //PseudoEquivalent(a, a, 10);
 
@@ -301,31 +302,37 @@ void Help(ostream& out, char *s){
 void test(){
 	//~ int nbAutomate = 19;
 	//~ string listeAutomate[] = {"automate_D_ex1","automate_D_ex2","automate_NDE_ex1","automate_NDE_ex2","automate_NDE_ex3","automate_NDE_ex4","automate_NDE_ex5","automate_NDE_ex6","automate_ND_ex1","automate_ND_ex2","automate_ND_ex3","automate_ND_ex4","automate_ND_ex5","automate_ND_ex6","automate_ND_ex7","automate_ND_ex8","output1","output2","output3"};
-
-	//~ for (int i = 0; i < nbAutomate; i++){
+//~ 
+	//~ for (int i = 0; i < nbAutomate; ++i){
 		//~ sAutoNDE automateA, automateB, result;
-		//~ ostringstream oss;
+		//~ ostringstream oss, oss2;
 		//~ oss << "/home/paturaux/Bureau/Partage/test/" << i << "_" << listeAutomate[i] << ".jff";
-		//~
+		//~ oss << "/home/paturaux/Documents/ProjetMaths/Projet_LIF15/exemples/" << listeAutomate[i] << ".gv";
+//~ 
 		//~ cout << endl << "##########   " << listeAutomate[i] << "   ##########" << endl;
-		//~ FromFile(automateA, "exemples/" + listeAutomate[i] + ".jff");
+		//~ FromFile(automateA, "exemples/" + listeAutomate[i] + ".txt");
 		//~ FromFile(automateB, "exemples/" + listeAutomate[i+1] + ".txt");
-		//~
-		//~ result = Minimize(automateA);
+		//~ 
+//~ result = Minimize(automateA);
+//~ 
+		//~ 
 		//~ cout << automateA << endl;
 		//~ cout << result << endl;
 		//~ ToJflap(result, oss.str());
+		//~ automateB=Determinize(result);
+		//~ oss2 << "/home/paturaux/Bureau/Partage/test/" << listeAutomate[i] << ".jff";
+		//~ ToJflap(automateB, oss2.str());
 		//~ while(getchar() != '\n');
 	//~ }
 	//~ sAutoNDE automateA, automateB, result;
 	//~ FromFile(automateB, "exemples/" + listeAutomate[18] + ".jff");
 	//~ FromFile(automateA, "exemples/" + listeAutomate[18] + ".jff");
-//~
+//~ 
 		//~ cout << PseudoEquivalent(automateA, automateB, 3);
 	//~ result = Concat(automateA, automateB);
 	//~ cout << result << endl;
 	//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/19.jff");
-	//~
+	
 
 
 
@@ -333,6 +340,8 @@ void test(){
 		//~ sAutoNDE automateA, automateB, result, a, b;
 		//~ FromFile(automateA, "exemples/automate_ND_ex5.txt");
 		//~ FromFile(automateB, "exemples/automate_ND_ex6.txt");
+		//~ result = Produit(automateA, automateB);
+		//~ ToJflap(result, "/home/paturaux/Bureau/Partage/test/exemple.jff");
 
 		//~ a = Complement(automateA);
 		//~ ToJflap(a, "/home/paturaux/Bureau/Partage/test/cA.jff");

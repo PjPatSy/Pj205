@@ -6,7 +6,7 @@ digraph finite_state_machine {
 	node [shape = point ]; q;
 	node [shape = circle];
 
-	q -> 4;
+	q -> 4
 	1 -> 0 [label = "a"];
 	1 -> 2 [label = "a"];
 	1 -> 4 [label = "b"];
@@ -16,5 +16,4 @@ digraph finite_state_machine {
 	0 -> 3 [label = "ε"];
 	3 -> 2 [label = "ε"];
 	4 -> 1 [label = "ε"];
-
 }
