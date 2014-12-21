@@ -327,33 +327,28 @@ sAutoNDE Determinize(const sAutoNDE& at){
           //////////////////////////////////////////////////////////////////////////////////////////
          ////                             Les epsilon Fermeture                                ////
         //////////////////////////////////////////////////////////////////////////////////////////
-        int offset = 0; // utile quand 2 états ont la même femeture, on rajoute qu'un seul état dans l'automate final
         cout << "Epsilon-fermeture:" << endl;
-        for(size_t i=0; (i+offset) < at.nb_etats; i++){
+        for(size_t i=0; i < at.nb_etats; i++){
             etatset_t tmp; // contient l'état dont on doit calculer la fermeture
             tmp.insert(i);
             Fermeture(at, tmp);
             pair<std::map<etatset_t,etat_t>::iterator,bool> res; // permet d'avoir un retour sur la méthode insert
-            res = fermeture.insert(pair<etatset_t, etat_t>(tmp, i+offset));
-            if(i+offset == at.initial){
-                corespEtat.insert(pair<etatset_t, etat_t>(tmp, i+offset)); // on ajoute seulement l'état initial
-                // seulement l'élément initial est testé si final, les autres états seront testés après(Pour éviter aussi que la poubelle soint ajouter en final dans certains cas)
-                if(ContientFinal(at, tmp)){
-                    rAutoD.finaux.insert(i); // ajoute l'état actuel comme final
-                }
-            }
+            res = fermeture.insert(pair<etatset_t, etat_t>(tmp, i));
             cout << "   E(" << i << ") = " << tmp;
             // si cette fermeture existe déjà, on ne rajoute pas d'état dans l'automate final
             if(!res.second){
                 cout << " = E(" << res.first->second << ")"; // map_t fermeture sert seulement à cet affichage, n'est pas très utile
-                i--; // comme on a enregistré aucun état dans la map correspondant à l'état i on reste sur cet indice
-                offset++; // augmenter l'offset permet de passer l'état suivant dans at même si on est toujours sur le même état dans rAutoD
             }
-            if((i+offset) == at.initial){
+            else if(i == at.initial){
+                corespEtat.insert(pair<etatset_t, etat_t>(tmp, 0)); // on ajoute seulement l'état initial
+                // seulement l'élément initial est testé si final, les autres états seront testés après(Pour éviter aussi que la poubelle sooit ajoutée en final dans certains cas)
+                if(ContientFinal(at, tmp)){
+                    rAutoD.finaux.insert(0); // ajoute l'état actuel comme final
+                }
                 // l'état initial de M' est la e-fermeture de l'état initial de M
                 // si la e-fermeture de M est déja dans la map, l'état initial de M' à l'état déjà dans la map
                 // sinon l'état init de M' est le nouvel état ajouté, le retour de l'insert permet de réaliser cette condition
-                rAutoD.initial = res.first->second;
+                rAutoD.initial = 0;
             }
             cout << endl;
         }
@@ -752,7 +747,7 @@ bool PseudoEquivalent(const sAutoNDE& a1, const sAutoNDE& a2, unsigned int word_
 
 bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     if(!EstDeterministe(a1) || !EstDeterministe(a2)){
-        cout << "Equivalence : Attention, les automates entres doivent etre deterministes" << endl;
+        cout << "Equivalence : Attention, les automates doivent etre deterministes." << endl;
         return false;
     }
 
