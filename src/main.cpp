@@ -7,10 +7,10 @@ int main(int argc, char* argv[] ){
     sAutoNDE a, b;
     sAutoNDE r;
 
-    if(!FromFile(a, "ex3.jff")){
+    if(!FromFile(a, "ex4.jff")){
         cout << "faux 1" << endl;
     }
-    if(!FromFile(b, "exemples/automate_ND_ex6.jff")){
+    if(!FromFile(b, "ex5.jff")){
         cout << "faux 2" << endl;
     }
 
@@ -26,10 +26,11 @@ int main(int argc, char* argv[] ){
     //r = Determinize(a);
     //r = Append(a, b);
     //r = Union(a, b);
-    //r = Concat(a,b);
+    r = Concat(a,b);
     //r = Complement(b);
-    r = Kleene(a);
-    cout << "R : " << r << endl;
+    //r = Kleene(a);
+
+    //cout << "R : " << r << endl;
     //r = Intersection(a, b);
 //    if(PseudoEquivalent(r,a, 1000)){
 //        cout << "Ils sont equivalents..." << endl;
@@ -37,8 +38,18 @@ int main(int argc, char* argv[] ){
 //    else{
 //        cout << "Non equivalents..." << endl;
 //    }
-//    r = Minimize(a);
+
+    if(Equivalent(a, b)){
+        cout << "A et B : Equivalents" << endl;
+    }
+    else{
+        cout << "A et B : Non Equivalents" << endl;
+    }
+    //r = Minimize(a);
     ToJflap(r, "res.jff");
+
+
+
     //cout << r << endl;
 
 

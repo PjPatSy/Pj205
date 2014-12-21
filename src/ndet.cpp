@@ -767,41 +767,45 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     }
     map<etat_t, etat_t> correspA1, correspA2;
 
-    etatset_t tmpLsEtat;
+    etatset_t tmpLsEtat; // Liste temporaire contenant tous les états à traiter
     etatset_t tmpLsEtat2;
     tmpLsEtat.insert(a1.initial);
+    correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial)); // Correspondance entre les noms de l'automate 1 à 2
+    correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial)); // Correspondance entre les noms de l'automate 2 à 1
 
-    //correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial));
-    //correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial));
-    int dd = 0;
-    while(dd < 5){
+    do{
         tmpLsEtat2.clear();
         for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
-            for(int sym=0; sym < a1.nb_symbs; sym++){
-                etat_t tmpEtatA1 = *(a1.trans[*it][sym].begin());
-                etat_t tmpEtatA2 = *(a2.trans[*it][sym].begin());
-                map<etat_t, etat_t>::iterator res = correspA1.find(tmpEtatA1);
-                if(res == correspA1.end()){
-                    correspA1.insert(pair<etat_t, etat_t>(tmpEtatA1, tmpEtatA2));
+            for(unsigned int sym=0; sym < a1.nb_symbs; sym++){
+                etat_t tmpEtatArrA1 = *(a1.trans[*it][sym].begin());
+                etat_t tmpEtatArrA2 = *(a2.trans[correspA1.find(*it)->second][sym].begin());
+                map<etat_t, etat_t>::iterator res = correspA1.find(tmpEtatArrA1);
+                if(res == correspA1.end()){ // Si on est jamais allé dans cet état
+                    // Si l'état actuel est déjà connu dans l'automate 2 alors qu'il ne l'ai pas dans l'automate 1
+                    if(correspA2.insert(pair<etat_t, etat_t>(tmpEtatArrA2, tmpEtatArrA1)).second == false){
+                        cout << "Automate 1 : De l'etat " << res->second << " par '" << (char)(ASCII_A+sym) << "' ne correspond pas a l'automate 2." << endl;
+                        return false;
+                    }
+                    correspA1.insert(pair<etat_t, etat_t>(tmpEtatArrA1, tmpEtatArrA2)); // Insert les nouveau états connus
+                    tmpLsEtat2.insert(tmpEtatArrA1);
                 }
                 else{
-
+                    if(res->second != tmpEtatArrA2){ // Si les états ne correspondent pas
+                        cout << "Automate 1 : De l'etat " << res->second << " par '" << (char)(ASCII_A+sym) << "' ne correspond pas a l'automate 2." << endl;
+                        return false;
+                    }
                 }
+            }
+            // Compare les états finaux
+            if((a1.finaux.find(*it) != a1.finaux.end()) != (a2.finaux.find(correspA1.find(*it)->second) != a2.finaux.end())){
+                cout << "Les etats finaux de l'automate 1 et l'automate 2 ne sont pas les memes : " << *it << endl;
+                return false;
             }
 
         }
-
-
-        dd++;
-    }
-
-//    map<etat_t, etat_t> coresp; // Permetant d'avoir la corespondance entre le numéro d'état de a1 et celui de a2
-//    for(int i=0; i < a1.nb_etats; i++){
-//        for(int j=0; j < nbSym; j++){
-//
-//        }
-//    }
-
+        tmpLsEtat = tmpLsEtat2;
+        cout << "tmpLsEtat : " << tmpLsEtat << endl;
+    }while(!tmpLsEtat.empty()); // Tant qu'on à pas fait tous les états
 
     return true;
 }
