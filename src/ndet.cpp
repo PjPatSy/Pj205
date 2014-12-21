@@ -671,7 +671,6 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
                                     r.finaux.insert(etatArr);
                                 }
                             }
-
                         }
                     }
                 }
@@ -680,22 +679,21 @@ sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y){
             //----------------- Epsilon fermetures ----------------------
             if(!x.epsilon[j].empty() && !y.epsilon[i].empty()){
                 for(etatset_t::iterator itX = x.epsilon[j].begin(); itX != x.epsilon[j].end(); itX++){
-                        for(etatset_t::iterator itY = y.epsilon[i].begin(); itY != y.epsilon[i].end(); itY++){
-                            res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size()));
-                            etat_t etatArr = res.first->second; // res.first->second représente le numéro de l'état d'arrivée
-                            r.epsilon[etatDep].insert(etatArr);
-                            if(res.second){ // si c'est un nouvel état
-                                if(x.initial == *itX && y.initial == *itY){ // etat initial, la pair contenant l'état initial de x et y
-                                    r.initial = etatArr;
-                                }
-                                if(y.finaux.find(*itY) != y.finaux.end()){ // on regarde si l'état de droite est final dans y
-                                    r.finaux.insert(etatArr);
-                                }
-                            }
-
-                        }
-                    }
-                }
+					for(etatset_t::iterator itY = y.epsilon[i].begin(); itY != y.epsilon[i].end(); itY++){
+						res = listNwStates.insert(pair<pair<etat_t, etat_t>, etat_t>(make_pair(*itX, *itY), listNwStates.size()));
+						etat_t etatArr = res.first->second; // res.first->second représente le numéro de l'état d'arrivée
+						r.epsilon[etatDep].insert(etatArr);
+						if(res.second){ // si c'est un nouvel état
+							if(x.initial == *itX && y.initial == *itY){ // etat initial, la pair contenant l'état initial de x et y
+								r.initial = etatArr;
+							}
+							if(y.finaux.find(*itY) != y.finaux.end()){ // on regarde si l'état de droite est final dans y
+								r.finaux.insert(etatArr);
+							}
+						}
+					}
+				}
+			}
         }
     }
 
@@ -800,7 +798,7 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
         }
         tmpLsEtat = tmpLsEtat2;
         cout << "tmpLsEtat : " << tmpLsEtat << endl;
-    }while(!tmpLsEtat.empty()); // Tant qu'on à pas fait tous les états
+    }while(!tmpLsEtat.empty()); // tant qu'on à pas fait tous les états
 
     return true;
 }
@@ -906,7 +904,7 @@ sAutoNDE Minimize(const sAutoNDE& at){
     for(size_t i=0; i < equiCl.size(); i++){
         etatset_t::iterator fState = equiCl[i].begin(); // fState : premier état de la classe
         for(size_t symb=0; symb < nwAuto.nb_symbs; symb++){
-            etatset_t::iterator arrState = nwAuto.trans[*fState][symb].begin(); // L'état d'arrivé en fonction de l'état fState et du symbole symb
+            etatset_t::iterator arrState = nwAuto.trans[*fState][symb].begin(); // l'état d'arrivé en fonction de l'état fState et du symbole symb
             for(size_t j=0; j < equiCl.size(); j++){
                 if(equiCl[j].find(*arrState) != equiCl[j].end()){
                     r.trans[i][symb].insert(j); // i numéro état de départ, j numéro état d'arrivée
@@ -924,7 +922,6 @@ sAutoNDE Minimize(const sAutoNDE& at){
         if(equiCl[i].find(nwAuto.initial) != equiCl[i].end()){
             r.initial = i;
         }
-
     }
     r.nb_finaux = r.finaux.size();
 
@@ -981,7 +978,7 @@ bool ToJflap(sAutoNDE& at, string path){
     TiXmlElement * elType = new TiXmlElement("type");
     elStructure->LinkEndChild(elType);
 
-	TiXmlText * txtType = new TiXmlText("fa"); // Met "fa" dans le type....
+	TiXmlText * txtType = new TiXmlText("fa"); // met "fa" dans le type
 	elType->LinkEndChild(txtType);
 
     TiXmlElement * elAutomaton = new TiXmlElement("automaton");
@@ -1064,13 +1061,13 @@ bool ToJflap(sAutoNDE& at, string path){
                 intToStr.str("");
                 elTransition->LinkEndChild(elFrom);
                 elTransition->LinkEndChild(elTo);
-                elTransition->LinkEndChild(elRead); // On ne met rien dans read
+                elTransition->LinkEndChild(elRead); // on ne met rien dans read
             }
         }
 
     }
 
-	doc.SaveFile(path.c_str()); // Libère tout seul la mémoire
+	doc.SaveFile(path.c_str()); // libère tout seul la mémoire
 
     return true;
 }
