@@ -13,7 +13,7 @@ int main(int argc, char* argv[] ){
 		Help(cout, argv[0]);
 		return EXIT_FAILURE;
 	}
-	
+
 	int pos;
 	int act=-1;                 // pos et act pour savoir quelle action effectuer
 	int nb_files = 0;           // nombre de fichiers en entrée

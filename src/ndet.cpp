@@ -750,12 +750,15 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     }
 
     if(a1.nb_symbs != a2.nb_symbs){
+        cout << "Le nombre de symboles est different" << endl;
         return false;
     }
     if(a1.nb_etats != a2.nb_etats){
+        cout << "Le nombre d'etats est different" << endl;
         return false;
     }
     if(a1.nb_finaux != a2.nb_finaux){
+        cout << "Le nombre d'etats finaux est different" << endl;
         return false;
     }
     map<etat_t, etat_t> correspA1, correspA2;
@@ -765,7 +768,8 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
     tmpLsEtat.insert(a1.initial);
     correspA1.insert(pair<etat_t, etat_t>(a1.initial, a2.initial)); // correspondance entre les noms de l'automate 1 à 2
     correspA2.insert(pair<etat_t, etat_t>(a2.initial, a1.initial)); // correspondance entre les noms de l'automate 2 à 1
-
+    cout << "Renommage des etats :" << endl;
+    cout << " - etat " << a1.initial << " (initial) --> " << a2.initial << endl;
     do{
         tmpLsEtat2.clear();
         for(etatset_t::iterator it = tmpLsEtat.begin(); it != tmpLsEtat.end(); it++){
@@ -779,6 +783,7 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
                         cout << "Automate 1 : De l'etat " << res->second << " par '" << (char)(ASCII_A+sym) << "' ne correspond pas a l'automate 2." << endl;
                         return false;
                     }
+                    cout << " - etat " << tmpEtatArrA1 << " --> " << tmpEtatArrA2 << endl;
                     correspA1.insert(pair<etat_t, etat_t>(tmpEtatArrA1, tmpEtatArrA2)); // Insert les nouveau états connus
                     tmpLsEtat2.insert(tmpEtatArrA1);
                 }
@@ -794,17 +799,17 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
                 cout << "Les etats finaux de l'automate 1 et l'automate 2 ne sont pas les memes : " << *it << endl;
                 return false;
             }
-
         }
         tmpLsEtat = tmpLsEtat2;
-        cout << "tmpLsEtat : " << tmpLsEtat << endl;
     }while(!tmpLsEtat.empty()); // tant qu'on à pas fait tous les états
-
+    cout << " - Les etats finaux sont les memes" << endl;
+    cout << "\t ==> Les automates sont egaux" << endl;
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// On utilise ici l'algorithme de Moore
 sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE r;
     sAutoNDE nwAuto; // automate at transformé s'il est non déterministe
@@ -851,16 +856,19 @@ sAutoNDE Minimize(const sAutoNDE& at){
                     for(unsigned int j=nbClAdd; j < nwListCl.size(); j++){
                         etatset_t::iterator curState = nwListCl[j].begin(); // On regarde seulement le premier état de la liste (car tous les états de cette liste sont équivalents)
                         unsigned int symb;
-                        for(symb=0; symb < nwAuto.nb_symbs; symb++){
+                        bool equiv = true; // Reste à vrai tant que l'état courrant est équivalent à l'état auquel on le compare
+                        for(symb=0; equiv && symb < nwAuto.nb_symbs; symb++){
                             etatset_t::iterator etatArr1 = nwAuto.trans[*it][symb].begin();
                             etatset_t::iterator etatArr2 = nwAuto.trans[*curState][symb].begin();
-                            bool prst1 = ((equiCl[i].find(*etatArr1) == equiCl[i].end())? false : true); // si etatArr1 est présent
-                            bool prst2 = ((equiCl[i].find(*etatArr2) == equiCl[i].end())? false : true); // si etatArr2 est présent
-                            if(prst1 != prst2){
-                                break;
+                            for(unsigned int k=0; k < equiCl.size(); k++){ // On regarde quelles sont les clases des états d'arrivée
+                                // Si les 2 états d'arrivés ne sont pas dans la même classe, alors on quitte la boucle pour tester avec le premier état de la classe suivante
+                                if((equiCl[k].find(*etatArr1) == equiCl[k].end()) != (equiCl[k].find(*etatArr2) == equiCl[k].end())){
+                                    equiv = false;
+                                    break; break;
+                                }
                             }
                         }
-                        if(symb >= nwAuto.nb_symbs){ // si l'état appartient à cette classe (classe j)
+                        if(equiv){ // si l'état appartient à cette classe (classe j)
                             nwListCl[j].insert(*it);
                             etatAdd = true;
                             break;
