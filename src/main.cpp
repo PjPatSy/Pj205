@@ -4,7 +4,7 @@ void test();
 void Help(ostream& out, char *s);
 
 int main(int argc, char* argv[] ){
-    if(argc == 2 && strcmp(argv[1], "test") == 0){
+	if(argc == 2 && strcmp(argv[1], "test") == 0){
         test();
 		return EXIT_SUCCESS;
 	}
@@ -238,11 +238,11 @@ void Help(ostream& out, char *s){
 	out << "-expr2aut ou expressionrationnelle2automate ExpressionRationnelle :\n\t calcul de l'automate correspondant à l'expression rationnelle" << endl;
 	*/
 	out << "-min ou -minimisation Input :\n\t construit l'automate standard correspondant a Input" << endl;
-	out << "-pequ ou -pseudo_equivalent Input1 Input2 size :\n\t équivalence d'automates par comparaison mot par mot de longueur < à size" << endl;
+	out << "-pequ ou -pseudo_equivalent Input1 Input2 size :\n\t equivalence d'automates par comparaison mot par mot de longueur < a size" << endl;
 	out << "-equ ou -equivalent Input1 Input2 :\n\t equivalence d'automates par minimisation et comparaison des tables de transition" << endl;
 	out << "-nop ou -no_operation Input :\n\t ne rien faire de particulier" << endl;
 
-	out << "-o ou -output Output :\n\t ecrire le resultat dans le fichier Output, afficher sur STDOUT si non spécifié" << endl;
+	out << "-o ou -output Output :\n\t ecrire le resultat dans le fichier Output, afficher sur STDOUT si non spécifie" << endl;
 	out << "-g ou -graphe :\n\t l'output est au format dot/graphiz" << endl  << endl;
 
 	out << "Exemple '" << s << " -determinize auto.txt -output determin -g'" << endl;

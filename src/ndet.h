@@ -65,6 +65,8 @@ bool FromFile(sAutoNDE& at, string path);
 // parse un fichier jff et remplit l'automate
 bool FromFileJff(sAutoNDE& at, string path);
 
+
+
 // -----------------------------------------------------------------------------
 // MANIPULATION D'AUTOMATES
 // -----------------------------------------------------------------------------
@@ -87,6 +89,8 @@ void Fermeture(const sAutoNDE& at, etatset_t& e);
 // déterminise un automate non déterministe comportant éventuellement des epsilons-transitions
 sAutoNDE Determinize(const sAutoNDE& at);
 
+
+
 // -----------------------------------------------------------------------------
 // AFFICHAGE
 // -----------------------------------------------------------------------------
@@ -99,6 +103,8 @@ ostream& operator<<(ostream& out, etatset_t e);
 
 // convertit une liste d'état en chaine de caractères
 string toStringEtatset(etatset_t e);
+
+
 
 // -----------------------------------------------------------------------------
 // OPERATION SUR DES AUTOMATES
@@ -125,6 +131,8 @@ sAutoNDE Intersection(const sAutoNDE& x, const sAutoNDE& y);
 // calcule l'intersection des deux automates par produit d'automates
 sAutoNDE Produit(const sAutoNDE& x, const sAutoNDE& y);
 
+
+
 // -----------------------------------------------------------------------------
 // COMPARAISON D'AUTOMATES
 // -----------------------------------------------------------------------------
@@ -137,6 +145,8 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2);
 
 // minimise un automate avec l'algorythme de Moore
 sAutoNDE Minimize(const sAutoNDE& at);
+
+
 
 // -----------------------------------------------------------------------------
 // SERIALISATION D'AUTOMATE

@@ -809,7 +809,6 @@ bool Equivalent(const sAutoNDE& a1, const sAutoNDE& a2) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// On utilise ici l'algorithme de Moore
 sAutoNDE Minimize(const sAutoNDE& at){
     sAutoNDE r;
     sAutoNDE nwAuto; // automate at transformé s'il est non déterministe

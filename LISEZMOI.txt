@@ -25,5 +25,4 @@ Commentaires
 ------------
 
 Le projet est en C++. 
-
 Pour lancer les testes de la première partie : ./ndet test
